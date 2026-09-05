@@ -1,6 +1,11 @@
 # ai/src/main.py
-import json
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+import json
 from typing import AsyncIterator
 
 from fastapi import FastAPI
@@ -38,6 +43,8 @@ async def chat_stream(session_id: str, message: str) -> StreamingResponse:
         history = get_history(session_id)
         messages = history + [HumanMessage(content=message)]
         final_reply = ""
+        reasoning = ""
+        sql_query = ""
 
         try:
             yield _sse("status", {"message": "🧠 Deep Agent đang phân tích câu hỏi..."})
@@ -54,6 +61,12 @@ async def chat_stream(session_id: str, message: str) -> StreamingResponse:
                     label = _TOOL_LABELS.get(tool_name, f"🔧 Gọi: {tool_name}...")
                     yield _sse("status", {"message": label})
 
+                elif kind == "on_tool_end" and event.get("name") == "call_sql_agent":
+                    output = event.get("data", {}).get("output", {})
+                    if isinstance(output, dict):
+                        reasoning = output.get("reasoning", "")
+                        sql_query = output.get("sql_query", "")
+
                 elif kind == "on_chain_end":
                     output = event.get("data", {}).get("output", {})
                     if isinstance(output, dict) and "messages" in output:
@@ -65,7 +78,7 @@ async def chat_stream(session_id: str, message: str) -> StreamingResponse:
                 HumanMessage(content=message),
                 AIMessage(content=final_reply),
             ])
-            yield _sse("done", {"reply": final_reply})
+            yield _sse("done", {"reply": final_reply, "reasoning": reasoning, "sql_query": sql_query})
 
         except Exception as exc:
             yield _sse("error", {"message": str(exc)})
