@@ -1,5 +1,5 @@
 # ai/tests/test_main.py
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient

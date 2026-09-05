@@ -2,7 +2,7 @@ from langchain_core.messages import HumanMessage
 
 
 def test_add_and_get():
-    from agent.history import add_messages, get_history, clear_history
+    from agent.history import add_messages, clear_history, get_history
     clear_history("s1")
     add_messages("s1", [HumanMessage(content="xin chào")])
     history = get_history("s1")
@@ -11,7 +11,7 @@ def test_add_and_get():
 
 
 def test_multiple_sessions_isolated():
-    from agent.history import add_messages, get_history, clear_history
+    from agent.history import add_messages, clear_history, get_history
     clear_history("sA")
     clear_history("sB")
     add_messages("sA", [HumanMessage(content="A")])
@@ -21,14 +21,14 @@ def test_multiple_sessions_isolated():
 
 
 def test_clear():
-    from agent.history import add_messages, get_history, clear_history
+    from agent.history import add_messages, clear_history, get_history
     add_messages("s2", [HumanMessage(content="hi")])
     clear_history("s2")
     assert get_history("s2") == []
 
 
 def test_max_history_trim():
-    from agent.history import add_messages, get_history, clear_history, MAX_HISTORY
+    from agent.history import MAX_HISTORY, add_messages, clear_history, get_history
     clear_history("s3")
     msgs = [HumanMessage(content=f"msg{i}") for i in range(MAX_HISTORY + 4)]
     add_messages("s3", msgs)
@@ -36,7 +36,7 @@ def test_max_history_trim():
 
 
 def test_get_returns_copy():
-    from agent.history import add_messages, get_history, clear_history
+    from agent.history import add_messages, clear_history, get_history
     clear_history("s4")
     add_messages("s4", [HumanMessage(content="x")])
     h = get_history("s4")

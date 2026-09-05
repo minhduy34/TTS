@@ -1,5 +1,5 @@
 # ai/tests/test_agent_tools.py
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 

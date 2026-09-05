@@ -1,8 +1,8 @@
-from langgraph.prebuilt import create_react_agent
 from langgraph.graph.state import CompiledStateGraph
+from langgraph.prebuilt import create_react_agent
 
 from agent.llm import get_llm
-from agent.tools.sql_tools import get_schema, execute_sql
+from agent.tools.sql_tools import execute_sql, get_schema
 
 _SQL_SYSTEM_PROMPT = """Bạn là SQL Query Agent, chuyên truy vấn database quản lý sinh viên.
 
