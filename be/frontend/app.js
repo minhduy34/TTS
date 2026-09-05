@@ -1,9 +1,11 @@
-// ai/src/frontend/app.js
+// be/frontend/app.js
 const SESSION_ID = "session-" + Math.random().toString(36).slice(2);
-const chat     = document.getElementById("chat");
-const input    = document.getElementById("input");
-const sendBtn  = document.getElementById("sendBtn");
+const chat      = document.getElementById("chat");
+const input     = document.getElementById("input");
+const sendBtn   = document.getElementById("sendBtn");
 const statusBar = document.getElementById("statusBar");
+
+let currentSummary = "";
 
 function sendMessage() {
   const text = input.value.trim();
@@ -16,7 +18,7 @@ function sendMessage() {
 }
 
 function streamResponse(message) {
-  const url = `/chat/stream?session_id=${encodeURIComponent(SESSION_ID)}&message=${encodeURIComponent(message)}`;
+  const url = `/chat/stream?session_id=${encodeURIComponent(SESSION_ID)}&message=${encodeURIComponent(message)}&summary=${encodeURIComponent(currentSummary)}`;
   const es = new EventSource(url);
 
   es.addEventListener("status", (e) => {
@@ -27,7 +29,8 @@ function streamResponse(message) {
   es.addEventListener("done", (e) => {
     const data = JSON.parse(e.data);
     hideStatus();
-    addBubble("agent", data.reply, data.reasoning);
+    currentSummary = data.summary || "";
+    addBubble("agent", data.reply, data.reasoning, data.content);
     setLoading(false);
     es.close();
   });
@@ -50,7 +53,7 @@ function streamResponse(message) {
   };
 }
 
-function addBubble(role, text, reasoning) {
+function addBubble(role, text, reasoning, content) {
   const wrap = document.createElement("div");
   wrap.className = `bubble ${role}`;
 
@@ -58,13 +61,20 @@ function addBubble(role, text, reasoning) {
   avatar.className = "avatar";
   avatar.textContent = role === "user" ? "🎓" : "🤖";
 
-  const content = document.createElement("div");
-  content.className = "bubble-content-wrap";
+  const contentWrap = document.createElement("div");
+  contentWrap.className = "bubble-content-wrap";
 
   const body = document.createElement("div");
   body.className = "bubble-content";
   body.textContent = text;
-  content.appendChild(body);
+  contentWrap.appendChild(body);
+
+  if (content) {
+    const contentBlock = document.createElement("div");
+    contentBlock.className = "content-block";
+    contentBlock.innerHTML = marked.parse(content);
+    contentWrap.appendChild(contentBlock);
+  }
 
   if (reasoning) {
     const toggle = document.createElement("div");
@@ -78,12 +88,12 @@ function addBubble(role, text, reasoning) {
       box.hidden = !box.hidden;
       toggle.textContent = box.hidden ? "🔍 Xem cách mình nghĩ" : "🔼 Ẩn đi";
     };
-    content.appendChild(toggle);
-    content.appendChild(box);
+    contentWrap.appendChild(toggle);
+    contentWrap.appendChild(box);
   }
 
   wrap.appendChild(avatar);
-  wrap.appendChild(content);
+  wrap.appendChild(contentWrap);
   chat.appendChild(wrap);
   chat.scrollTop = chat.scrollHeight;
 }

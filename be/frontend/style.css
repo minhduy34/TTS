@@ -152,3 +152,28 @@ button:active { transform: scale(0.97); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+.content-block {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.content-block table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+.content-block th,
+.content-block td {
+  border: 1px solid rgba(0,0,0,0.15);
+  padding: 6px 10px;
+  text-align: left;
+}
+.content-block th {
+  background: rgba(0,0,0,0.08);
+  font-weight: 600;
+}
