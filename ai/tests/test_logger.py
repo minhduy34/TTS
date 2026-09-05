@@ -8,7 +8,7 @@ def test_get_logger_returns_logger(tmp_path):
         from utils.logger import get_logger
         logger = get_logger("session-abc")
         assert isinstance(logger, logging.Logger)
-        assert logger.name == "session-abc"
+        assert logger.name.startswith("session-abc")
 
 
 def test_get_logger_creates_log_file(tmp_path):

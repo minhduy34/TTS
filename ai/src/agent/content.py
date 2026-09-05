@@ -14,7 +14,7 @@ _CONTENT_PROMPT = (
 )
 
 
-def generate_content(reply: str, sql_query: str = "") -> str:
+async def generate_content(reply: str, sql_query: str = "") -> str:
     if not reply:
         return ""
 
@@ -23,7 +23,7 @@ def generate_content(reply: str, sql_query: str = "") -> str:
         prompt += f"\n\nSQL query used:\n{sql_query}"
 
     llm = get_llm()
-    response = llm.invoke([
+    response = await llm.ainvoke([
         SystemMessage(content=_CONTENT_PROMPT),
         HumanMessage(content=prompt),
     ])

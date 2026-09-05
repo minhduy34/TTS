@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
+import asyncio
 import json
 from typing import AsyncIterator
 
 from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 from agent.content import generate_content
 from agent.deep_agent import get_deep_agent
@@ -56,7 +57,7 @@ async def chat_stream(
 
         context_messages = []
         if summary:
-            context_messages = [SystemMessage(content=f"Previous conversation summary: {summary}")]
+            context_messages = [SystemMessage(content=f"<previous_conversation_summary>\n{summary}\n</previous_conversation_summary>")]
         messages = context_messages + history + [HumanMessage(content=message)]
 
         final_reply = ""
@@ -81,7 +82,14 @@ async def chat_stream(
 
                 elif kind == "on_tool_end" and event.get("name") == "call_sql_agent":
                     output = event.get("data", {}).get("output", {})
-                    if isinstance(output, dict):
+                    if isinstance(output, ToolMessage):
+                        try:
+                            parsed = json.loads(output.content)
+                            reasoning = parsed.get("reasoning", "")
+                            sql_query = parsed.get("sql_query", "")
+                        except (json.JSONDecodeError, AttributeError):
+                            pass
+                    elif isinstance(output, dict):  # fallback for older langchain versions
                         reasoning = output.get("reasoning", "")
                         sql_query = output.get("sql_query", "")
 
@@ -97,8 +105,10 @@ async def chat_stream(
                 AIMessage(content=final_reply),
             ])
 
-            new_summary = generate_summary(session_id)
-            content = generate_content(final_reply, sql_query)
+            new_summary, content = await asyncio.gather(
+                generate_summary(session_id),
+                generate_content(final_reply, sql_query),
+            )
 
             logger.info(f"Done: reply_len={len(final_reply)} summary_len={len(new_summary)}")
             yield _sse("done", {

@@ -11,7 +11,7 @@ _SUMMARY_PROMPT = (
 )
 
 
-def generate_summary(session_id: str) -> str:
+async def generate_summary(session_id: str) -> str:
     history = get_history(session_id)
     if not history:
         return ""
@@ -22,8 +22,8 @@ def generate_summary(session_id: str) -> str:
     )
 
     llm = get_llm()
-    response = llm.invoke([
+    response = await llm.ainvoke([
         SystemMessage(content=_SUMMARY_PROMPT),
         HumanMessage(content=conversation),
     ])
-    return response.content.strip()
+    return response.content.strip()[:1800]
