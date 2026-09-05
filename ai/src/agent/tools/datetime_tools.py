@@ -10,10 +10,11 @@ from langchain_core.tools import tool
 # ── Constants ──────────────────────────────────────────────────────────────────
 MONTHS_PER_QUARTER = 3
 QUARTERS_PER_YEAR = 4
+MONTHS_PER_YEAR = MONTHS_PER_QUARTER * QUARTERS_PER_YEAR
 DAYS_PER_WEEK = 7
 YEAR_START_MONTH = 1
-YEAR_END_MONTH = 12
 YEAR_START_DAY = 1
+YEAR_END_MONTH = 12
 YEAR_END_DAY = 31
 
 
@@ -107,7 +108,7 @@ def _resolve_quarter(today: date, expr: str) -> dict[str, str] | None:
         pivot_month = today.month - total_months_back
         pivot_year = today.year
         while pivot_month <= 0:
-            pivot_month += 12
+            pivot_month += MONTHS_PER_YEAR
             pivot_year -= 1
         target_quarter = _quarter_of_month(pivot_month)
         start, end = _quarter_range(pivot_year, target_quarter)
@@ -123,17 +124,21 @@ def _resolve_quarter(today: date, expr: str) -> dict[str, str] | None:
 def _resolve_year(today: date, expr: str) -> dict[str, str] | None:
     """Parse năm expressions; return dict or None if not matched."""
     if expr in ("năm nay", "năm này"):
+        start = date(today.year, YEAR_START_MONTH, YEAR_START_DAY)
+        end = date(today.year, YEAR_END_MONTH, YEAR_END_DAY)
         return {
-            "start_date": f"{today.year}-01-01",
-            "end_date": f"{today.year}-12-31",
+            "start_date": str(start),
+            "end_date": str(end),
             "label": f"Năm {today.year}",
         }
 
     if expr == "năm ngoái":
         prev_year = today.year - 1
+        start = date(prev_year, YEAR_START_MONTH, YEAR_START_DAY)
+        end = date(prev_year, YEAR_END_MONTH, YEAR_END_DAY)
         return {
-            "start_date": f"{prev_year}-01-01",
-            "end_date": f"{prev_year}-12-31",
+            "start_date": str(start),
+            "end_date": str(end),
             "label": f"Năm {prev_year}",
         }
 
@@ -227,25 +232,13 @@ def resolve_time_range(expression: str) -> dict[str, str]:
     today = date.today()
     expr = expression.lower().strip()
 
-    result = _resolve_month(today, expr)
-    if result:
-        return result
-
-    result = _resolve_quarter(today, expr)
-    if result:
-        return result
-
-    result = _resolve_year(today, expr)
-    if result:
-        return result
-
-    result = _resolve_week(today, expr)
-    if result:
-        return result
+    resolvers = [_resolve_month, _resolve_quarter, _resolve_year, _resolve_week]
+    for resolver in resolvers:
+        if result := resolver(today, expr):
+            return result
 
     if "học kỳ" in expr:
-        result = _resolve_semester(today, expr)
-        if result:
+        if result := _resolve_semester(today, expr):
             return result
 
     # Fallback: current month
