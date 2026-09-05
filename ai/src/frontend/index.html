@@ -1,1 +1,38 @@
-<html><body><h1>Student AI Assistant</h1></body></html>
+<!-- ai/src/frontend/index.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Sinh Viên 🎓</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <span class="header-icon">🎓</span>
+      <div>
+        <h1>Trợ lý AI Sinh Viên</h1>
+        <p>Hỏi mình về học phần, điểm số, học bổng nhé ✨</p>
+      </div>
+    </header>
+
+    <div class="chat-container" id="chat">
+      <div class="bubble agent">
+        <span class="avatar">🤖</span>
+        <div class="bubble-content">
+          Chào bạn! 👋 Mình là trợ lý AI của trường, có thể giúp bạn tra cứu thông tin học tập nè. Hỏi mình đi! 📚
+        </div>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar" hidden></div>
+
+    <div class="input-area">
+      <textarea id="input" placeholder="Hỏi mình về học phần, điểm, học bổng..." rows="1"></textarea>
+      <button id="sendBtn" onclick="sendMessage()">Gửi ➤</button>
+    </div>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
