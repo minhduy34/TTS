@@ -6,16 +6,6 @@ from langchain_core.tools import tool
 
 from agent.subagents.sql_query_agent import get_sql_agent
 
-_OUT_OF_SCOPE_TEMPLATE = (
-    "Ôi bạn ơi 🥲 mình chỉ biết chuyện học hành thôi nha! "
-    "Câu hỏi về '{topic}' thì mình bó tay rồi 😅\n\n"
-    "Thử hỏi mình về mấy cái này đi nè ✨\n"
-    "- 📚 Học phần và số tín chỉ\n"
-    "- 📊 Điểm số và kết quả học tập\n"
-    "- 🎓 Tiến độ tốt nghiệp\n"
-    "- 💰 Học bổng và điều kiện xét"
-)
-
 _DATE_RANGE_SUFFIX = "\nKhoảng thời gian cần lọc: từ {start_date} đến {end_date} ({label})"
 
 
@@ -53,10 +43,11 @@ async def call_sql_agent(
 
 @tool
 def out_of_scope_reply(topic: str) -> str:
-    """Return a friendly Vietnamese reply when the user asks about something outside
-    the student management domain (learning, grades, scholarships, courses).
+    """Signal that the user's question is outside the student management domain.
+    Call this when the user asks about anything unrelated to courses, grades,
+    credits, or scholarships. The agent will then reply in its own words.
 
     Args:
         topic: Brief description of what the user asked about (e.g., 'thời tiết', 'bóng đá')
     """
-    return _OUT_OF_SCOPE_TEMPLATE.format(topic=topic)
+    return f"out_of_scope: '{topic}'"
