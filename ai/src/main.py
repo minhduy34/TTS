@@ -8,13 +8,16 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 import json
 from typing import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import AIMessage, HumanMessage
 
 from agent.deep_agent import get_deep_agent
 from agent.history import add_messages, get_history
+
+MAX_MESSAGE_LENGTH = 2000
+MAX_SESSION_ID_LENGTH = 64
 
 app = FastAPI(title="Student AI Assistant")
 
@@ -37,7 +40,10 @@ async def health() -> dict:
 
 
 @app.get("/chat/stream")
-async def chat_stream(session_id: str, message: str) -> StreamingResponse:
+async def chat_stream(
+    session_id: str = Query(max_length=MAX_SESSION_ID_LENGTH, pattern=r"^[A-Za-z0-9_-]+$"),
+    message: str = Query(max_length=MAX_MESSAGE_LENGTH, min_length=1),
+) -> StreamingResponse:
     async def generate() -> AsyncIterator[str]:
         agent = get_deep_agent()
         history = get_history(session_id)
