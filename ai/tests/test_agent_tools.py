@@ -31,6 +31,8 @@ async def test_call_sql_agent_appends_date_range():
             "date_range": {"start_date": "2026-08-01", "end_date": "2026-08-31", "label": "Tháng 8"}
         })
         assert "answer" in result
+        assert "reasoning" in result
+        assert "sql_query" in result
         call_args = mock_agent.ainvoke.call_args
         messages = call_args[0][0]["messages"]
         assert "2026-08-01" in messages[0]["content"]

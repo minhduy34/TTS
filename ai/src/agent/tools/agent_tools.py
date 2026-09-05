@@ -37,8 +37,29 @@ async def call_sql_agent(
         {"messages": [{"role": "user", "content": full_question}]},
         config=config,
     )
-    last_message = result["messages"][-1]
-    return {"answer": last_message.content}
+    messages = result["messages"]
+    last_message = messages[-1]
+
+    # Extract SQL query from most recent execute_sql tool call
+    sql_query = ""
+    for msg in reversed(messages):
+        for call in getattr(msg, "tool_calls", []) or []:
+            if call["name"] == "execute_sql":
+                sql_query = call["args"].get("query", "")
+                break
+        if sql_query:
+            break
+
+    # Reasoning = content from intermediate AI messages (not the final one)
+    from langchain_core.messages import AIMessage as _AIMsg
+    reasoning_parts = [
+        m.content
+        for m in messages[1:-1]
+        if isinstance(m, _AIMsg) and m.content and isinstance(m.content, str)
+    ]
+    reasoning = "\n\n".join(reasoning_parts)
+
+    return {"answer": last_message.content, "reasoning": reasoning, "sql_query": sql_query}
 
 
 @tool

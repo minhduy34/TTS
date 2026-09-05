@@ -43,3 +43,4 @@ def test_chat_stream_returns_200(client):
         )
         assert resp.status_code == 200
         assert "text/event-stream" in resp.headers["content-type"]
+        assert "reasoning" in resp.text
