@@ -1,4 +1,4 @@
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage
 
 
 def test_add_and_get():
