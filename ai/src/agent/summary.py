@@ -16,9 +16,15 @@ async def generate_summary(session_id: str) -> str:
     if not history:
         return ""
 
+    def _text(msg) -> str:
+        c = msg.content
+        if isinstance(c, list):
+            return "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in c)
+        return str(c)
+
     conversation = "\n".join(
-        f"{'User' if isinstance(m, HumanMessage) else 'Assistant'}: {m.content}"
-        for m in history[-6:]  # last 3 turns
+        f"{'User' if isinstance(m, HumanMessage) else 'Assistant'}: {_text(m)}"
+        for m in history[-6:]
     )
 
     llm = get_llm()
@@ -26,4 +32,7 @@ async def generate_summary(session_id: str) -> str:
         SystemMessage(content=_SUMMARY_PROMPT),
         HumanMessage(content=conversation),
     ])
-    return response.content.strip()[:1800]
+    content = response.content
+    if isinstance(content, list):
+        content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+    return content.strip()[:1800]

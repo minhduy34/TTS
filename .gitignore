@@ -5,3 +5,5 @@ __pycache__/
 .pytest_cache/
 *.pyc
 ai/src/utils/logs/
+docs/superpowers/
+.$pipeline.drawio.bkp

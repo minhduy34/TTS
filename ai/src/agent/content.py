@@ -27,4 +27,7 @@ async def generate_content(reply: str, sql_query: str = "") -> str:
         SystemMessage(content=_CONTENT_PROMPT),
         HumanMessage(content=prompt),
     ])
-    return response.content.strip()
+    content = response.content
+    if isinstance(content, list):
+        content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+    return content.strip()

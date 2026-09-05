@@ -70,6 +70,20 @@ body {
   word-break: break-word;
 }
 .bubble.agent .bubble-content {
+  white-space: normal;
+}
+.bubble.agent .bubble-content p {
+  margin: 0.3em 0;
+}
+.bubble.agent .bubble-content p:first-child { margin-top: 0; }
+.bubble.agent .bubble-content p:last-child  { margin-bottom: 0; }
+.bubble.agent .bubble-content ul,
+.bubble.agent .bubble-content ol {
+  padding-left: 1.4em;
+  margin: 0.3em 0;
+}
+.bubble.agent .bubble-content li { margin: 0.15em 0; }
+.bubble.agent .bubble-content {
   background: #f0f2ff;
   color: #2d2d2d;
   border-bottom-left-radius: 4px;
@@ -152,6 +166,27 @@ button:active { transform: scale(0.97); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+.sql-toggle {
+  font-size: 0.78rem;
+  color: #667eea;
+  cursor: pointer;
+  margin-top: 6px;
+  user-select: none;
+}
+.sql-toggle:hover { text-decoration: underline; }
+.sql-content {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.78rem;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-top: 6px;
+  overflow-x: auto;
+}
 
 .content-block {
   margin-top: 12px;

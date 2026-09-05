@@ -31,7 +31,7 @@ function streamResponse(message) {
       const data = JSON.parse(e.data);
       hideStatus();
       currentSummary = data.summary || "";
-      addBubble("agent", data.reply, data.reasoning, data.content);
+      addBubble("agent", data.reply, data.reasoning, data.content, data.sql_query);
     } finally {
       setLoading(false);
       es.close();
@@ -56,7 +56,7 @@ function streamResponse(message) {
   };
 }
 
-function addBubble(role, text, reasoning, content) {
+function addBubble(role, text, reasoning, content, sqlQuery) {
   const wrap = document.createElement("div");
   wrap.className = `bubble ${role}`;
 
@@ -69,7 +69,11 @@ function addBubble(role, text, reasoning, content) {
 
   const body = document.createElement("div");
   body.className = "bubble-content";
-  body.textContent = text;
+  if (role === "agent") {
+    body.innerHTML = DOMPurify.sanitize(marked.parse(text));
+  } else {
+    body.textContent = text;
+  }
   contentWrap.appendChild(body);
 
   if (content) {
@@ -77,6 +81,22 @@ function addBubble(role, text, reasoning, content) {
     contentBlock.className = "content-block";
     contentBlock.innerHTML = DOMPurify.sanitize(marked.parse(content));
     contentWrap.appendChild(contentBlock);
+  }
+
+  if (sqlQuery) {
+    const sqlToggle = document.createElement("div");
+    sqlToggle.className = "sql-toggle";
+    sqlToggle.textContent = "🗄️ Xem câu SQL";
+    const sqlBox = document.createElement("div");
+    sqlBox.className = "sql-content";
+    sqlBox.textContent = sqlQuery;
+    sqlBox.hidden = true;
+    sqlToggle.onclick = () => {
+      sqlBox.hidden = !sqlBox.hidden;
+      sqlToggle.textContent = sqlBox.hidden ? "🗄️ Xem câu SQL" : "🔼 Ẩn SQL";
+    };
+    contentWrap.appendChild(sqlToggle);
+    contentWrap.appendChild(sqlBox);
   }
 
   if (reasoning) {

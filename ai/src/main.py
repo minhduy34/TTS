@@ -64,6 +64,14 @@ async def chat_stream(
         reasoning = ""
         sql_query = ""
 
+        def _extract_text(content) -> str:
+            if isinstance(content, list):
+                return "".join(
+                    part.get("text", "") if isinstance(part, dict) else str(part)
+                    for part in content
+                )
+            return str(content) if content else ""
+
         try:
             yield _sse("status", {"message": "🧠 Deep Agent đang phân tích câu hỏi..."})
 
@@ -98,7 +106,7 @@ async def chat_stream(
                     if isinstance(output, dict) and "messages" in output:
                         msgs = output["messages"]
                         if msgs and hasattr(msgs[-1], "content") and msgs[-1].content:
-                            final_reply = msgs[-1].content
+                            final_reply = _extract_text(msgs[-1].content)
 
             add_messages(session_id, [
                 HumanMessage(content=message),
