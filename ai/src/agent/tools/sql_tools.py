@@ -38,6 +38,10 @@ FK_QUERY = """
 """
 
 
+STATEMENT_SEPARATOR = ";"
+MAX_RESULT_ROWS = 200
+
+
 def _get_conn() -> psycopg2.extensions.connection:
     """Open a new database connection using DATABASE_URL."""
     return psycopg2.connect(os.getenv("DATABASE_URL"))
@@ -95,9 +99,12 @@ def execute_sql(query: str) -> dict:
     Args:
         query: A valid PostgreSQL SELECT statement
     Returns:
-        {"rows": [...], "row_count": N} on success
+        {"rows": [...], "row_count": N, "truncated": bool} on success
         {"error": "...", "rows": [], "row_count": 0} on failure or disallowed query
     """
+    if STATEMENT_SEPARATOR in query.strip().rstrip(STATEMENT_SEPARATOR):
+        return {"error": "Only a single SELECT statement is allowed.", "rows": [], "row_count": 0}
+
     normalized = query.strip().upper()
     if not (normalized.startswith("SELECT") or normalized.startswith("WITH")):
         return {
@@ -107,11 +114,14 @@ def execute_sql(query: str) -> dict:
         }
 
     conn = _get_conn()
+    conn.set_session(readonly=True, autocommit=True)
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SET LOCAL statement_timeout = '10s'")
         cur.execute(query)
-        rows = [dict(r) for r in cur.fetchall()]
-        return {"rows": rows, "row_count": len(rows)}
+        rows = [dict(r) for r in cur.fetchmany(MAX_RESULT_ROWS)]
+        truncated = cur.fetchone() is not None
+        return {"rows": rows, "row_count": len(rows), "truncated": truncated}
     except psycopg2.Error as e:
         return {"error": str(e), "rows": [], "row_count": 0}
     finally:
