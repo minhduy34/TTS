@@ -5,11 +5,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-async def _aiter(items):
-    for item in items:
-        yield item
-
-
 @pytest.fixture
 def client():
     with patch("agent.deep_agent.get_deep_agent") as mock_getter, \

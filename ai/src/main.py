@@ -1,6 +1,7 @@
 # ai/src/main.py
 import json
 from pathlib import Path
+from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
@@ -32,7 +33,7 @@ async def health() -> dict:
 
 @app.get("/chat/stream")
 async def chat_stream(session_id: str, message: str) -> StreamingResponse:
-    async def generate():
+    async def generate() -> AsyncIterator[str]:
         agent = get_deep_agent()
         history = get_history(session_id)
         messages = history + [HumanMessage(content=message)]
