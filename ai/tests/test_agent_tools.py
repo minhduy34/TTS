@@ -1,6 +1,7 @@
 # ai/tests/test_agent_tools.py
-import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
+
+import pytest
 
 
 def test_out_of_scope_reply_contains_topic():
