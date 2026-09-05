@@ -11,7 +11,7 @@ Idempotent: uses ON CONFLICT DO NOTHING throughout.
 import logging
 import os
 import random
-from datetime import date
+from datetime import date, timedelta
 
 import psycopg2
 import psycopg2.extras
@@ -107,7 +107,8 @@ SEMESTERS = [
     ("HK3-2023-2024", "Học kỳ hè năm học 2023-2024", "2023-2024", 3, date(2024, 6, 10), date(2024, 8, 16), False),
     ("HK1-2024-2025", "Học kỳ 1 năm học 2024-2025",  "2024-2025", 1, date(2024, 9, 2),  date(2025, 1, 12), False),
     ("HK2-2024-2025", "Học kỳ 2 năm học 2024-2025",  "2024-2025", 2, date(2025, 1, 20), date(2025, 5, 30), False),
-    ("HK1-2025-2026", "Học kỳ 1 năm học 2025-2026",  "2025-2026", 1, date(2025, 9, 1),  date(2026, 1, 11), True),
+    ("HK1-2025-2026", "Học kỳ 1 năm học 2025-2026",  "2025-2026", 1, date(2025, 9, 1),  date(2026, 1, 11), False),
+    ("HK1-2026-2027", "Học kỳ 1 năm học 2026-2027",  "2026-2027", 1, date(2026, 9, 7),  date(2027, 1, 16), True),
 ]
 
 SCHOLARSHIPS = [
@@ -323,12 +324,12 @@ def _seed_scholarship_awards(cur: psycopg2.extensions.cursor) -> None:
     scholarships = cur.fetchall()
 
     cur.execute(
-        "SELECT semester_id FROM dim_semester"
+        "SELECT semester_id, start_date, end_date FROM dim_semester"
         " WHERE is_current = FALSE ORDER BY start_date DESC LIMIT 2"
     )
-    past_semester_ids = [row[0] for row in cur.fetchall()]
+    past_semesters = [(row[0], row[1], row[2]) for row in cur.fetchall()]
 
-    if not past_semester_ids:
+    if not past_semesters:
         log.warning("No past semesters found — scholarship awards skipped.")
         return
 
@@ -343,7 +344,9 @@ def _seed_scholarship_awards(cur: psycopg2.extensions.cursor) -> None:
             if random.random() >= SCHOLARSHIP_AWARD_PROBABILITY:
                 continue
 
-            awarded_semester_id = random.choice(past_semester_ids)
+            sem_id, sem_start, sem_end = random.choice(past_semesters)
+            awarded_semester_id = sem_id
+            awarded_at = sem_start + timedelta(days=random.randint(0, (sem_end - sem_start).days))
             cur.execute("SAVEPOINT sp_award")
             try:
                 cur.execute(
@@ -351,7 +354,7 @@ def _seed_scholarship_awards(cur: psycopg2.extensions.cursor) -> None:
                     " (student_id, scholarship_id, semester_id, amount_awarded, awarded_at)"
                     " VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
                     (student_id, scholarship_id, awarded_semester_id,
-                     float(scholarship_amount), date.today()),
+                     float(scholarship_amount), awarded_at),
                 )
                 cur.execute("RELEASE SAVEPOINT sp_award")
                 award_count += 1
@@ -388,6 +391,20 @@ def run() -> None:
         _seed_students(cur)
         _seed_enrollments(cur)
         _seed_scholarship_awards(cur)
+        cur.execute("""
+            UPDATE dim_student s SET
+                total_credits_completed = COALESCE(agg.credits, 0),
+                current_gpa = COALESCE(agg.gpa, 0.00)
+            FROM (
+                SELECT student_id,
+                       SUM(credits_earned) AS credits,
+                       ROUND(AVG(grade) / 2.5, 2) AS gpa
+                FROM fact_enrollment
+                WHERE status IN ('passed', 'failed')
+                GROUP BY student_id
+            ) agg
+            WHERE s.student_id = agg.student_id
+        """)
         conn.commit()
         print("✅ Seed complete")
     except Exception:
