@@ -10,11 +10,13 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+from agent.content import generate_content
 from agent.deep_agent import get_deep_agent
 from agent.history import add_messages, get_history
+from agent.summary import generate_summary
+from utils.logger import get_logger
 
 MAX_MESSAGE_LENGTH = 2000
 MAX_SESSION_ID_LENGTH = 64
@@ -43,11 +45,20 @@ async def health() -> dict:
 async def chat_stream(
     session_id: str = Query(max_length=MAX_SESSION_ID_LENGTH, pattern=r"^[A-Za-z0-9_-]+$"),
     message: str = Query(max_length=MAX_MESSAGE_LENGTH, min_length=1),
+    summary: str = Query(default="", max_length=2000),
 ) -> StreamingResponse:
     async def generate() -> AsyncIterator[str]:
+        logger = get_logger(session_id)
+        logger.info(f"Request: {message!r} | summary_len={len(summary)}")
+
         agent = get_deep_agent()
         history = get_history(session_id)
-        messages = history + [HumanMessage(content=message)]
+
+        context_messages = []
+        if summary:
+            context_messages = [SystemMessage(content=f"Previous conversation summary: {summary}")]
+        messages = context_messages + history + [HumanMessage(content=message)]
+
         final_reply = ""
         reasoning = ""
         sql_query = ""
@@ -65,6 +76,7 @@ async def chat_stream(
                 if kind == "on_tool_start":
                     tool_name = event.get("name", "")
                     label = _TOOL_LABELS.get(tool_name, f"🔧 Gọi: {tool_name}...")
+                    logger.info(f"Tool call: {tool_name}")
                     yield _sse("status", {"message": label})
 
                 elif kind == "on_tool_end" and event.get("name") == "call_sql_agent":
@@ -84,9 +96,21 @@ async def chat_stream(
                 HumanMessage(content=message),
                 AIMessage(content=final_reply),
             ])
-            yield _sse("done", {"reply": final_reply, "reasoning": reasoning, "sql_query": sql_query})
+
+            new_summary = generate_summary(session_id)
+            content = generate_content(final_reply, sql_query)
+
+            logger.info(f"Done: reply_len={len(final_reply)} summary_len={len(new_summary)}")
+            yield _sse("done", {
+                "reply": final_reply,
+                "reasoning": reasoning,
+                "sql_query": sql_query,
+                "summary": new_summary,
+                "content": content,
+            })
 
         except Exception as exc:
+            logger.exception(f"Error: {exc}")
             yield _sse("error", {"message": str(exc)})
 
     return StreamingResponse(
@@ -96,6 +120,6 @@ async def chat_stream(
     )
 
 
-# Mount frontend LAST — catch-all route
-_frontend_dir = Path(__file__).parent / "frontend"
-app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="static")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True, log_level="info")
