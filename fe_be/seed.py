@@ -260,42 +260,29 @@ def _seed_enrollments(cur: psycopg2.extensions.cursor) -> None:
     cur.execute("SELECT course_id, credits FROM dim_course")
     all_courses = cur.fetchall()
 
-    enrollment_count = 0
-    skip_count = 0
-
+    rows: list[tuple] = []
     for student_id in student_ids:
         student_course_pool = random.sample(
             all_courses,
             min(len(all_courses), random.randint(COURSES_PER_STUDENT_MIN, COURSES_PER_STUDENT_MAX)),
         )
-
         for semester_id, is_current_semester in semesters:
             sem_courses = random.sample(
                 student_course_pool,
                 min(len(student_course_pool), random.randint(ENROLLMENTS_PER_SEM_MIN, ENROLLMENTS_PER_SEM_MAX)),
             )
             for course_id, course_credits in sem_courses:
-                row = _build_enrollment_row(
+                rows.append(_build_enrollment_row(
                     student_id, course_id, semester_id, course_credits, is_current_semester
-                )
-                cur.execute("SAVEPOINT sp_enroll")
-                try:
-                    cur.execute(
-                        "INSERT INTO fact_enrollment"
-                        " (student_id, course_id, semester_id, grade, grade_letter, credits_earned, status)"
-                        " VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
-                        row,
-                    )
-                    cur.execute("RELEASE SAVEPOINT sp_enroll")
-                    enrollment_count += 1
-                except psycopg2.Error as exc:
-                    cur.execute("ROLLBACK TO SAVEPOINT sp_enroll")
-                    cur.execute("RELEASE SAVEPOINT sp_enroll")
-                    log.warning("Enrollment skipped (student=%s course=%s sem=%s): %s",
-                                student_id, course_id, semester_id, exc)
-                    skip_count += 1
+                ))
 
-    log.info("Enrollments inserted: %d rows, %d skipped.", enrollment_count, skip_count)
+    cur.executemany(
+        "INSERT INTO fact_enrollment"
+        " (student_id, course_id, semester_id, grade, grade_letter, credits_earned, status)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
+        rows,
+    )
+    log.info("Enrollments inserted: %d rows attempted.", len(rows))
 
 
 def _build_enrollment_row(
@@ -333,9 +320,7 @@ def _seed_scholarship_awards(cur: psycopg2.extensions.cursor) -> None:
         log.warning("No past semesters found — scholarship awards skipped.")
         return
 
-    award_count = 0
-    skip_count = 0
-
+    award_rows: list[tuple] = []
     for student_id, student_gpa in active_students:
         for scholarship_id, min_gpa, scholarship_amount in scholarships:
             gpa_qualifies = min_gpa is None or float(student_gpa) >= float(min_gpa)
@@ -343,29 +328,17 @@ def _seed_scholarship_awards(cur: psycopg2.extensions.cursor) -> None:
                 continue
             if random.random() >= SCHOLARSHIP_AWARD_PROBABILITY:
                 continue
-
             sem_id, sem_start, sem_end = random.choice(past_semesters)
-            awarded_semester_id = sem_id
             awarded_at = sem_start + timedelta(days=random.randint(0, (sem_end - sem_start).days))
-            cur.execute("SAVEPOINT sp_award")
-            try:
-                cur.execute(
-                    "INSERT INTO fact_scholarship_award"
-                    " (student_id, scholarship_id, semester_id, amount_awarded, awarded_at)"
-                    " VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
-                    (student_id, scholarship_id, awarded_semester_id,
-                     float(scholarship_amount), awarded_at),
-                )
-                cur.execute("RELEASE SAVEPOINT sp_award")
-                award_count += 1
-            except psycopg2.Error as exc:
-                cur.execute("ROLLBACK TO SAVEPOINT sp_award")
-                cur.execute("RELEASE SAVEPOINT sp_award")
-                log.warning("Award skipped (student=%s scholarship=%s): %s",
-                            student_id, scholarship_id, exc)
-                skip_count += 1
+            award_rows.append((student_id, scholarship_id, sem_id, float(scholarship_amount), awarded_at))
 
-    log.info("Scholarship awards inserted: %d rows, %d skipped.", award_count, skip_count)
+    cur.executemany(
+        "INSERT INTO fact_scholarship_award"
+        " (student_id, scholarship_id, semester_id, amount_awarded, awarded_at)"
+        " VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING",
+        award_rows,
+    )
+    log.info("Scholarship awards inserted: %d rows attempted.", len(award_rows))
 
 
 # ---------------------------------------------------------------------------
@@ -406,7 +379,7 @@ def run() -> None:
             WHERE s.student_id = agg.student_id
         """)
         conn.commit()
-        print("✅ Seed complete")
+        log.info("Seed complete.")
     except Exception:
         conn.rollback()
         log.exception("Seed failed — transaction rolled back.")
