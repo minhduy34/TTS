@@ -142,7 +142,7 @@ COMMENT ON COLUMN fact_enrollment.student_id    IS 'ID sinh viên, khóa ngoại
 COMMENT ON COLUMN fact_enrollment.course_id     IS 'ID học phần, khóa ngoại tham chiếu đến dim_course';
 COMMENT ON COLUMN fact_enrollment.semester_id   IS 'ID học kỳ, khóa ngoại tham chiếu đến dim_semester';
 COMMENT ON COLUMN fact_enrollment.grade         IS 'Điểm số trên thang 10. NULL nếu học kỳ chưa kết thúc (status = in_progress).';
-COMMENT ON COLUMN fact_enrollment.grade_l   etter  IS 'Điểm chữ: A (>=8.5), B+ (8.0-8.4), B (7.0-7.9), C+ (6.5-6.9), C (5.5-6.4), D+ (5.0-5.4), D (4.0-4.9), F (<4.0)';
+COMMENT ON COLUMN fact_enrollment.grade_letter IS 'Điểm chữ: A (>=8.5), B+ (8.0-8.4), B (7.0-7.9), C+ (6.5-6.9), C (5.5-6.4), D+ (5.0-5.4), D (4.0-4.9), F (<4.0)';
 COMMENT ON COLUMN fact_enrollment.credits_earned IS 'Số tín chỉ đạt được: bằng credits của dim_course nếu passed, bằng 0 nếu failed hoặc withdrawn';
 COMMENT ON COLUMN fact_enrollment.status        IS 'Trạng thái: passed (qua môn), failed (trượt), in_progress (đang học), withdrawn (rút môn)';
 COMMENT ON COLUMN fact_enrollment.registered_at IS 'Thời điểm sinh viên đăng ký học phần';
