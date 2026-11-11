@@ -1,7 +1,9 @@
+from contextlib import contextmanager
 import os
 
 import psycopg2
 import psycopg2.extras
+from psycopg2.pool import ThreadedConnectionPool
 from langchain_core.tools import tool
 
 COLUMNS_QUERY = """
@@ -41,10 +43,37 @@ FK_QUERY = """
 STATEMENT_SEPARATOR = ";"
 MAX_RESULT_ROWS = 200
 
+_pool: ThreadedConnectionPool | None = None
+_SCHEMA_CACHE: str | None = None
 
-def _get_conn() -> psycopg2.extensions.connection:
-    """Open a new database connection using DATABASE_URL."""
-    return psycopg2.connect(os.getenv("DATABASE_URL"))
+
+def _get_pool() -> ThreadedConnectionPool:
+    global _pool
+    if _pool is None:
+        db_url = os.getenv("DATABASE_URL")
+        _pool = ThreadedConnectionPool(minconn=1, maxconn=5, dsn=db_url)
+    return _pool
+
+
+@contextmanager
+def get_db_connection():
+    """Acquire a connection from the pool and return it safely."""
+    pool = _get_pool()
+    conn = pool.getconn()
+    try:
+        yield conn
+    except Exception:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        raise
+    finally:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        pool.putconn(conn)
 
 
 @tool
@@ -52,16 +81,17 @@ def get_schema() -> str:
     """Read the full database schema including table descriptions, column descriptions,
     data types, nullable flags, and foreign key relationships.
     ALWAYS call this first before writing any SQL query."""
-    conn = _get_conn()
-    try:
+    global _SCHEMA_CACHE
+    if _SCHEMA_CACHE is not None:
+        return _SCHEMA_CACHE
+
+    with get_db_connection() as conn:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         cur.execute(COLUMNS_QUERY)
         columns = cur.fetchall()
 
         cur.execute(FK_QUERY)
         fks = cur.fetchall()
-    finally:
-        conn.close()
 
     fk_map: dict[tuple[str, str], str] = {
         (r["table_name"], r["column_name"]): f"→ {r['references_table']}.{r['references_column']}"
@@ -89,6 +119,7 @@ def get_schema() -> str:
         is_last_in_table = is_last_row or columns[i + 1]["table_name"] != current_table
         if is_last_in_table:
             schema_text += "\n"
+    _SCHEMA_CACHE = schema_text
     return schema_text
 
 
@@ -113,16 +144,14 @@ def execute_sql(query: str) -> dict:
             "row_count": 0,
         }
 
-    conn = _get_conn()
-    conn.set_session(readonly=True, autocommit=True)
     try:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("SET LOCAL statement_timeout = '10s'")
-        cur.execute(query)
-        rows = [dict(r) for r in cur.fetchmany(MAX_RESULT_ROWS)]
-        truncated = cur.fetchone() is not None
-        return {"rows": rows, "row_count": len(rows), "truncated": truncated}
+        with get_db_connection() as conn:
+            conn.set_session(readonly=True, autocommit=True)
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur.execute("SET LOCAL statement_timeout = '10s'")
+            cur.execute(query)
+            rows = [dict(r) for r in cur.fetchmany(MAX_RESULT_ROWS)]
+            truncated = cur.fetchone() is not None
+            return {"rows": rows, "row_count": len(rows), "truncated": truncated}
     except psycopg2.Error as e:
         return {"error": str(e), "rows": [], "row_count": 0}
-    finally:
-        conn.close()
