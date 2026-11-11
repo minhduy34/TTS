@@ -13,7 +13,7 @@ _SUMMARY_PROMPT = (
 
 async def generate_summary(session_id: str) -> str:
     history = get_history(session_id)
-    if not history:
+    if not history or len(history) < 4:
         return ""
 
     def _text(msg) -> str:

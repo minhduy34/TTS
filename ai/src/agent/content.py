@@ -18,6 +18,10 @@ async def generate_content(reply: str, sql_query: str = "") -> str:
     if not reply:
         return ""
 
+    # Skip extra LLM formatting call for simple conversational replies without SQL data
+    if not sql_query and not any(kw in reply.lower() for kw in ["|", "bảng", "học kỳ", "sinh viên", "học bổng", "tín chỉ"]):
+        return ""
+
     prompt = f"Reply to format:\n{reply}"
     if sql_query:
         prompt += f"\n\nSQL query used:\n{sql_query}"
