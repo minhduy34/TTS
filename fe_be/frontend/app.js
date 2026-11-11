@@ -76,10 +76,20 @@ function addBubble(role, text, reasoning, content, sqlQuery) {
   }
   contentWrap.appendChild(body);
 
-  if (content) {
+  if (content && content.trim()) {
+    const contentToggle = document.createElement("div");
+    contentToggle.className = "content-toggle";
+    contentToggle.textContent = "📋 Xem tóm tắt nội dung";
     const contentBlock = document.createElement("div");
     contentBlock.className = "content-block";
     contentBlock.innerHTML = DOMPurify.sanitize(marked.parse(content));
+    contentBlock.hidden = true;
+    contentToggle.onclick = () => {
+      contentBlock.hidden = !contentBlock.hidden;
+      contentToggle.textContent = contentBlock.hidden ? "📋 Xem tóm tắt nội dung" : "🔼 Ẩn tóm tắt";
+      chat.scrollTop = chat.scrollHeight;
+    };
+    contentWrap.appendChild(contentToggle);
     contentWrap.appendChild(contentBlock);
   }
 
