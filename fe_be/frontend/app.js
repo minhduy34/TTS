@@ -70,9 +70,9 @@ function addBubble(role, text, reasoning, content, sqlQuery) {
   const body = document.createElement("div");
   body.className = "bubble-content";
   if (role === "agent") {
-    body.innerHTML = DOMPurify.sanitize(marked.parse(text));
+    body.innerHTML = DOMPurify.sanitize(marked.parse(text || ""));
   } else {
-    body.textContent = text;
+    body.textContent = text || "";
   }
   contentWrap.appendChild(body);
 
@@ -135,6 +135,11 @@ function hideStatus() {
 function setLoading(loading) {
   sendBtn.disabled = loading;
   input.disabled   = loading;
+  if (!loading) {
+    setTimeout(() => {
+      try { input.focus(); } catch (_) {}
+    }, 50);
+  }
 }
 
 function autoResize() {
