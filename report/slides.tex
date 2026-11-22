@@ -1,0 +1,301 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, calc}
+
+\usetheme{metropolis}
+\setbeamercolor{frametitle}{bg=blue!55!black, fg=white}
+\definecolor{main}{RGB}{0,82,155}
+\setbeamercolor{title}{fg=main}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{\hfill\tiny\insertframenumber/\inserttotalframenumber\hspace{0.4cm}\vspace{0.2cm}}
+\setbeamerfont{frametitle}{size=\large\bfseries}
+
+\title{XÂY DỰNG HỆ THỐNG TEXT-TO-SQL\\HỖ TRỢ TRUY VẤN DỮ LIỆU}
+\subtitle{Kiến trúc đa tác tử MAC-SQL + LLM trên CSDL học vụ}
+\author{Cái Minh Duy -- MSSV 4654110003}
+\institute{Học phần Xử lý Ngôn ngữ Tự nhiên -- GVHD: TS. Lê Quang Hùng\\Khoa học Dữ liệu K46 -- Đại học Quy Nhơn}
+\date{Tháng 11/2026}
+
+\begin{document}
+
+% 1
+\begin{frame}
+\titlepage
+\end{frame}
+
+% 2
+\begin{frame}{1. Bối cảnh và vấn đề}
+\begin{columns}[T]
+\column{0.55\textwidth}
+\begin{itemize}
+  \item Dữ liệu học vụ nằm trong CSDL quan hệ
+  \item Người dùng phổ thông \textbf{không biết SQL}
+  \item Báo cáo tĩnh thiếu linh hoạt cho nhu cầu đột xuất
+\end{itemize}
+\vspace{0.5cm}
+\alert{Text-to-SQL}: tự động chuyển câu hỏi tiếng Việt thành truy vấn SQL
+\column{0.42\textwidth}
+\begin{block}{Ví dụ}
+\small \textit{``Bao nhiêu sinh viên trượt Giải tích 1?''}\\[2pt]
+$\Downarrow$\\[2pt]
+\texttt{SELECT COUNT(DISTINCT ...)}\\
+\texttt{FROM fact\_enrollment ...}
+\end{block}
+\end{columns}
+\end{frame}
+
+% 3
+\begin{frame}{2. Ba thách thức cốt lõi}
+\centering
+\begin{tikzpicture}[box/.style={rounded corners, draw=main, fill=blue!6, text width=3.4cm, align=center, minimum height=2.6cm, font=\small}]
+\node[box] (a) {\textbf{Nhập nhằng ngôn ngữ}\\[3pt] ``rớt môn'' = ``trượt'' = \texttt{failed}};
+\node[box, right=0.6cm of a] (b) {\textbf{Schema Linking}\\[3pt] Ánh xạ tiếng Việt $\to$ bảng, cột, JOIN};
+\node[box, right=0.6cm of b] (c) {\textbf{Đúng khi thực thi}\\[3pt] Lỗi phương ngữ, kết quả rỗng, an toàn dữ liệu};
+\end{tikzpicture}
+\end{frame}
+
+% 4
+\begin{frame}{3. Mục tiêu và đóng góp}
+\begin{enumerate}
+  \item Thiết kế CSDL học vụ \textbf{Star Schema} (8 bảng) kèm chú thích ngữ nghĩa
+  \item Triển khai kiến trúc \textbf{đa tác tử}: Selector -- Decomposer -- Refiner
+  \item Xây \textbf{benchmark tự động} 20 câu, 4 mức độ khó; đánh giá EX, EM, CSR
+  \item Kiểm thử \textbf{End-to-End} hai dịch vụ FastAPI (SSE)
+\end{enumerate}
+\end{frame}
+
+% 5
+\begin{frame}{4. Phát biểu bài toán và bộ dữ liệu chuẩn}
+\[
+f(Q, S) \rightarrow Y
+\]
+{\small $Q$: câu hỏi tự nhiên \quad $S$: lược đồ CSDL \quad $Y$: câu lệnh SQL}
+\vspace{0.5cm}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Bộ dữ liệu} & \textbf{Đặc trưng} & \textbf{Năm} \\
+\midrule
+WikiSQL & Đơn bảng, truy vấn đơn giản & 2017 \\
+Spider & Đa bảng, cross-domain, lồng nhau & 2018 \\
+BIRD & CSDL lớn, dữ liệu nhiễu, tri thức nghiệp vụ & 2023 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{frame}
+
+% 6
+\begin{frame}{5. Các hướng tiếp cận tiêu biểu}
+\centering
+\begin{tikzpicture}[
+  node distance=0.5cm,
+  st/.style={rounded corners, draw=main, fill=blue!6, text width=3.1cm, align=center, minimum height=1.9cm, font=\small},
+  ar/.style={-{Stealth}, thick, main}]
+\node[st] (a) {\textbf{Mạng nơ-ron}\\RAT-SQL};
+\node[st, right=of a] (b) {\textbf{LLM + Prompt}\\DIN-SQL, DAIL-SQL};
+\node[st, right=of b, fill=orange!15, draw=orange!80!black] (c) {\textbf{Đa tác tử}\\\textbf{MAC-SQL}};
+\draw[ar] (a)--(b); \draw[ar] (b)--(c);
+\end{tikzpicture}
+\vspace{0.4cm}
+
+{\small Giảm tải ngữ cảnh, tự sửa lỗi, chia nhiệm vụ cho tác tử chuyên biệt}
+\end{frame}
+
+% 7
+\begin{frame}{6. MAC-SQL: ba tác tử cộng tác}
+\begin{columns}[T]
+\column{0.32\textwidth}
+\begin{block}{Selector}
+Lọc bảng/cột liên quan, giảm nhiễu: $S \to S'$
+\end{block}
+\column{0.32\textwidth}
+\begin{block}{Decomposer}
+Phân rã câu hỏi theo Chain-of-Thought, sinh SQL
+\end{block}
+\column{0.32\textwidth}
+\begin{block}{Refiner}
+Thực thi, đọc lỗi, \textbf{tự sửa} (tối đa 3 lần)
+\end{block}
+\end{columns}
+\vspace{0.4cm}
+\centering
+\small Cùng thêm bài học LinkedIn: \alert{mô tả ngữ nghĩa bảng/cột} nâng chất lượng từ 9\% lên 48\%
+\end{frame}
+
+% 8
+\begin{frame}{7. CSDL học vụ -- Star Schema}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\centering
+\begin{tikzpicture}[scale=0.85, transform shape,
+  fact/.style={draw=orange!80!black, fill=orange!15, rounded corners, minimum width=2.4cm, minimum height=0.8cm, font=\scriptsize\bfseries},
+  dim/.style={draw=main, fill=blue!6, rounded corners, minimum width=2.0cm, minimum height=0.7cm, font=\scriptsize}]
+\node[fact] (f) {fact\_enrollment};
+\node[dim, above left=0.9cm and 0.3cm of f] (s) {dim\_student};
+\node[dim, above right=0.9cm and 0.3cm of f] (c) {dim\_course};
+\node[dim, below=0.9cm of f] (t) {dim\_semester};
+\node[dim, left=0.6cm of s, yshift=-1.4cm] (m) {dim\_major};
+\node[dim, right=0.6cm of c, yshift=-1.4cm] (d) {dim\_department};
+\draw (f)--(s); \draw (f)--(c); \draw (f)--(t); \draw (s)--(m); \draw (c)--(d);
+\end{tikzpicture}
+\column{0.48\textwidth}
+\begin{itemize}
+  \item \textbf{8 bảng}, \textbf{2.958} bản ghi
+  \item \texttt{fact\_enrollment}: 2.769
+  \item \texttt{fact\_scholarship\_award}: 39
+  \item 100 sinh viên, 30 học phần
+  \item Chú thích tiếng Việt: \texttt{COMMENT ON}
+\end{itemize}
+\end{columns}
+\end{frame}
+
+% 9
+\begin{frame}{8. Kiến trúc hệ thống}
+\centering
+\begin{tikzpicture}[
+  node distance=0.45cm,
+  bx/.style={rounded corners, draw=main, fill=blue!6, text width=2.1cm, align=center, minimum height=1.3cm, font=\scriptsize},
+  ag/.style={rounded corners, draw=teal!70!black, fill=teal!10, text width=2.1cm, align=center, minimum height=1.3cm, font=\scriptsize},
+  db/.style={cylinder, shape border rotate=90, aspect=0.25, draw=orange!80!black, fill=orange!15, minimum height=1.3cm, text width=1.5cm, align=center, font=\scriptsize},
+  ar/.style={-{Stealth}, thick}]
+\node[bx] (u) {Giao diện Web\\(cổng 8000)};
+\node[ag, right=of u] (d) {Deep Agent\\phân loại ý định};
+\node[ag, right=of d] (q) {SQL Agent\\Selector + CoT};
+\node[ag, right=of q] (r) {execute\_sql\\Refiner, chỉ đọc};
+\node[db, right=of r] (b) {CSDL\\8 bảng};
+\draw[ar] (u)--(d); \draw[ar] (d)--(q); \draw[ar] (q)--(r); \draw[ar] (r)--(b);
+\draw[ar, dashed, red!70!black] (r.south) to[bend left=35] node[below, font=\tiny]{lỗi / rỗng $\to$ sửa} (q.south);
+\end{tikzpicture}
+
+\vspace{0.4cm}
+{\small LangGraph + Gemini (\texttt{temperature = 0}) \quad|\quad FastAPI + SSE (cổng 8000 $\leftrightarrow$ 8001)}
+\end{frame}
+
+% 10
+\begin{frame}{9. Ba thành phần chính và rào chắn an toàn}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{Chức năng}
+\begin{itemize}
+  \item \texttt{get\_schema()}: mô tả + FK, cache RAM
+  \item CoT 5 bước: mục tiêu, SELECT, JOIN, WHERE, GROUP/ORDER
+  \item \texttt{resolve\_time\_range}: ``tháng trước'' $\to$ ngày cụ thể
+\end{itemize}
+\column{0.48\textwidth}
+\textbf{Bảo mật \texttt{execute\_sql}}
+\begin{itemize}
+  \item Chỉ \texttt{SELECT} / \texttt{WITH}
+  \item Chặn nhiều câu lệnh (\texttt{;})
+  \item Phiên \alert{chỉ đọc}, timeout 10s, tối đa 200 dòng
+\end{itemize}
+\end{columns}
+\end{frame}
+
+% 11
+\begin{frame}{10. Thiết lập thực nghiệm và độ đo}
+\small
+\textbf{Dữ liệu:} 20 câu tiếng Việt tự nhiên $\times$ 4 mức độ (Easy, Medium, Hard, Extra Hard), mỗi mức 5 câu
+\vspace{0.2cm}
+\[
+\text{EX}=\frac{1}{N}\sum_{n=1}^{N}\mathbb{I}\big(\text{Exec}(\hat Y_n,D)=\text{Exec}(Y_n,D)\big)
+\qquad
+\text{EM}=\frac{1}{N}\sum_{n=1}^{N}\prod_{k}\mathbb{I}\big(C_k(\hat Y_n)=C_k(Y_n)\big)
+\]
+\[
+\text{CSR}=\frac{1}{N}\sum_{n=1}^{N}\mathbb{I}\big(\text{không lỗi thực thi}\big)
+\]
+\begin{itemize}
+  \item 3 cấu hình: Baseline $\to$ +Selector $\to$ Full Pipeline
+  \item Chạy tự động: \texttt{run\_benchmark.py}
+\end{itemize}
+\end{frame}
+
+% 12
+\begin{frame}{11. Kết quả Ablation Study}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Cấu hình} & \textbf{EX} & \textbf{EM} & \textbf{CSR} & \textbf{Latency} \\
+\midrule
+Baseline (Zero-shot) & 45,00\% & 40,00\% & 90,00\% & 0,80s \\
++ Schema Selector & 90,00\% & 85,00\% & 95,00\% & 0,51s \\
+\rowcolor{blue!10}
+\textbf{Full Pipeline} & \textbf{95,00\%} & \textbf{85,00\%} & \textbf{100,00\%} & 1,02s \\
+\bottomrule
+\end{tabular}
+\vspace{0.5cm}
+
+\alert{+50 điểm EX} so với Baseline; chú thích ngữ nghĩa đóng góp lớn nhất
+\end{frame}
+
+% 13
+\begin{frame}{12. EX theo mức độ khó}
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar, bar width=9pt, width=0.92\textwidth, height=6.2cm, ymin=0, ymax=118,
+  symbolic x coords={Easy,Medium,Hard,Extra Hard,Tổng},
+  xtick=data, nodes near coords, every node near coord/.append style={font=\tiny},
+  legend style={at={(0.5,1.05)}, anchor=south, legend columns=3, font=\scriptsize},
+  ymajorgrids=true, enlarge x limits=0.15, ylabel={EX (\%)}, tick label style={font=\small}]
+\addplot[fill=gray!45] coordinates {(Easy,60)(Medium,80)(Hard,20)(Extra Hard,20)(Tổng,45)};
+\addplot[fill=teal!55] coordinates {(Easy,100)(Medium,100)(Hard,80)(Extra Hard,80)(Tổng,90)};
+\addplot[fill=blue!70] coordinates {(Easy,100)(Medium,100)(Hard,100)(Extra Hard,80)(Tổng,95)};
+\legend{Baseline, +Selector, Full Pipeline}
+\end{axis}
+\end{tikzpicture}
+\end{frame}
+
+% 14
+\begin{frame}{13. Ca điển hình (Refiner) và kiểm thử E2E}
+\begin{columns}[T]
+\column{0.55\textwidth}
+\textbf{Câu H05:} ``qua môn \textit{Cấu trúc dữ liệu và giải thuật}''
+\begin{itemize}\small
+  \item DB lưu tên: \texttt{Cấu trúc Dữ liệu \& Giải thuật}
+  \item Lần 1: lọc theo tên $\to$ \alert{0 kết quả}
+  \item Refiner đối chiếu danh mục, dùng \texttt{course\_code = 'CS102'}
+  \item Lần 2: \textbf{24 sinh viên} (đúng)
+\end{itemize}
+\column{0.42\textwidth}
+\textbf{E2E (cổng 8000 $\to$ 8001)}
+\begin{itemize}\small
+  \item \texttt{/health}: 200 OK $\times$ 2
+  \item Thống kê theo ngành: PASS
+  \item ``Trượt Giải tích 1'': 11 SV, PASS
+  \item Câu ngoài phạm vi: từ chối, bỏ SQL
+\end{itemize}
+\end{columns}
+\end{frame}
+
+% 15
+\begin{frame}{14. Kết luận và hướng phát triển}
+\begin{columns}[T]
+\column{0.5\textwidth}
+\textbf{Kết quả}
+\begin{itemize}
+  \item Full Pipeline: EX \textbf{95\%}, CSR \textbf{100\%}
+  \item Chú thích lược đồ: EX 45\% $\to$ 90\%
+  \item Refiner: sửa lệch tên thực thể
+\end{itemize}
+\column{0.48\textwidth}
+\textbf{Hạn chế $\to$ Hướng đi}
+\begin{itemize}
+  \item Độ trễ tuần tự $\to$ song song hóa tác tử
+  \item Lệch giá trị ô $\to$ \alert{RAG} tra cứu giá trị
+  \item Chi phí token $\to$ fine-tune mô hình nhỏ
+\end{itemize}
+\end{columns}
+\vfill
+\centering\Large\textbf{Xin cảm ơn!}
+\end{frame}
+
+\end{document}

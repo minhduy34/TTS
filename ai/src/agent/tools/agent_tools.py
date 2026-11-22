@@ -52,14 +52,23 @@ async def call_sql_agent(
 
     # Reasoning = content from intermediate AI messages (not the final one)
     from langchain_core.messages import AIMessage as _AIMsg
+
+    def _to_text(content) -> str:
+        if isinstance(content, list):
+            return "".join(
+                part.get("text", "") if isinstance(part, dict) else str(part)
+                for part in content
+            )
+        return str(content) if content else ""
+
     reasoning_parts = [
-        m.content
+        _to_text(m.content)
         for m in messages[1:-1]
-        if isinstance(m, _AIMsg) and m.content and isinstance(m.content, str)
+        if isinstance(m, _AIMsg) and _to_text(m.content)
     ]
     reasoning = "\n\n".join(reasoning_parts)
 
-    return {"answer": last_message.content, "reasoning": reasoning, "sql_query": sql_query}
+    return {"answer": _to_text(last_message.content), "reasoning": reasoning, "sql_query": sql_query}
 
 
 @tool

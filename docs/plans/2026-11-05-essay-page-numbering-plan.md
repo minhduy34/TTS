@@ -63,3 +63,4 @@ Kiểm tra bằng script:
 
 **Step 3: Cập nhật task tracker và commit**
 Cập nhật `docs/plans/task.md` đánh dấu hoàn thành và commit code.
+

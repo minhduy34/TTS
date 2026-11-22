@@ -1,5 +1,8 @@
 from contextlib import contextmanager
 import os
+from pathlib import Path
+import re
+import sqlite3
 
 import psycopg2
 import psycopg2.extras
@@ -44,21 +47,56 @@ STATEMENT_SEPARATOR = ";"
 MAX_RESULT_ROWS = 200
 
 _pool: ThreadedConnectionPool | None = None
+_USE_SQLITE_FALLBACK: bool = False
+_SQLITE_PATH: Path = Path(__file__).resolve().parents[4] / "fe_be" / "student.db"
 _SCHEMA_CACHE: str | None = None
 
 
-def _get_pool() -> ThreadedConnectionPool:
-    global _pool
+def _get_pool() -> ThreadedConnectionPool | None:
+    global _pool, _USE_SQLITE_FALLBACK
+    if _USE_SQLITE_FALLBACK:
+        return None
     if _pool is None:
-        db_url = os.getenv("DATABASE_URL")
-        _pool = ThreadedConnectionPool(minconn=1, maxconn=5, dsn=db_url)
+        db_url = os.getenv("DATABASE_URL", "")
+        if not db_url or db_url.startswith("sqlite"):
+            _USE_SQLITE_FALLBACK = True
+            return None
+        try:
+            _pool = ThreadedConnectionPool(minconn=1, maxconn=5, dsn=db_url, connect_timeout=3)
+        except Exception:
+            if _SQLITE_PATH.exists():
+                _USE_SQLITE_FALLBACK = True
+                return None
+            raise
     return _pool
+
+
+def _normalize_pg_to_sqlite(query: str) -> str:
+    """Translate minor PostgreSQL dialect differences so queries run cleanly on SQLite."""
+    q = query.strip()
+    # Replace ILIKE with LIKE (SQLite LIKE is case-insensitive for ASCII; we also register custom function)
+    q = re.sub(r"\bILIKE\b", "LIKE", q, flags=re.IGNORECASE)
+    # Replace PostgreSQL ::type casts e.g. expr::numeric, expr::float, expr::int, expr::text, expr::date
+    q = re.sub(r"::(?:numeric|decimal|float|double\s+precision|real|int|integer|bigint|text|varchar|date|timestamp)(?:\(\d+(?:\s*,\s*\d+)?\))?", "", q, flags=re.IGNORECASE)
+    # Replace NOW() with CURRENT_TIMESTAMP
+    q = re.sub(r"\bNOW\s*\(\s*\)", "CURRENT_TIMESTAMP", q, flags=re.IGNORECASE)
+    return q
 
 
 @contextmanager
 def get_db_connection():
-    """Acquire a connection from the pool and return it safely."""
+    """Acquire a connection from the pool (or local SQLite fallback) and return it safely."""
     pool = _get_pool()
+    if pool is None:
+        uri = f"file:{_SQLITE_PATH.as_posix()}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True, timeout=10.0)
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+        finally:
+            conn.close()
+        return
+
     conn = pool.getconn()
     try:
         yield conn
@@ -76,6 +114,47 @@ def get_db_connection():
         pool.putconn(conn)
 
 
+def _get_sqlite_schema(conn: sqlite3.Connection) -> tuple[list[dict], list[dict]]:
+    cur = conn.cursor()
+    tbl_comments = {}
+    col_comments = {}
+    try:
+        for r in cur.execute("SELECT table_name, table_comment FROM _meta_table_comments"):
+            tbl_comments[r["table_name"]] = r["table_comment"]
+        for r in cur.execute("SELECT table_name, column_name, column_comment FROM _meta_column_comments"):
+            col_comments[(r["table_name"], r["column_name"])] = r["column_comment"]
+    except sqlite3.Error:
+        pass
+
+    tables = [
+        r["name"]
+        for r in cur.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_meta_%' ORDER BY name"
+        ).fetchall()
+    ]
+    columns = []
+    fks = []
+    for t in tables:
+        for col in cur.execute(f"PRAGMA table_info({t})").fetchall():
+            columns.append({
+                "table_name": t,
+                "table_comment": tbl_comments.get(t, ""),
+                "column_name": col["name"],
+                "data_type": col["type"].lower() if col["type"] else "text",
+                "is_nullable": "NO" if col["notnull"] or col["pk"] else "YES",
+                "column_default": col["dflt_value"],
+                "column_comment": col_comments.get((t, col["name"]), ""),
+            })
+        for fk in cur.execute(f"PRAGMA foreign_key_list({t})").fetchall():
+            fks.append({
+                "table_name": t,
+                "column_name": fk["from"],
+                "references_table": fk["table"],
+                "references_column": fk["to"],
+            })
+    return columns, fks
+
+
 @tool
 def get_schema() -> str:
     """Read the full database schema including table descriptions, column descriptions,
@@ -86,12 +165,15 @@ def get_schema() -> str:
         return _SCHEMA_CACHE
 
     with get_db_connection() as conn:
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute(COLUMNS_QUERY)
-        columns = cur.fetchall()
+        if isinstance(conn, sqlite3.Connection):
+            columns, fks = _get_sqlite_schema(conn)
+        else:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur.execute(COLUMNS_QUERY)
+            columns = cur.fetchall()
 
-        cur.execute(FK_QUERY)
-        fks = cur.fetchall()
+            cur.execute(FK_QUERY)
+            fks = cur.fetchall()
 
     fk_map: dict[tuple[str, str], str] = {
         (r["table_name"], r["column_name"]): f"→ {r['references_table']}.{r['references_column']}"
@@ -128,7 +210,7 @@ def execute_sql(query: str) -> dict:
     """Execute a SELECT SQL query against the student management database.
     Only SELECT and WITH...SELECT queries are permitted.
     Args:
-        query: A valid PostgreSQL SELECT statement
+        query: A valid SQL SELECT statement
     Returns:
         {"rows": [...], "row_count": N, "truncated": bool} on success
         {"error": "...", "rows": [], "row_count": 0} on failure or disallowed query
@@ -146,12 +228,21 @@ def execute_sql(query: str) -> dict:
 
     try:
         with get_db_connection() as conn:
-            conn.set_session(readonly=True, autocommit=True)
-            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cur.execute("SET LOCAL statement_timeout = '10s'")
-            cur.execute(query)
-            rows = [dict(r) for r in cur.fetchmany(MAX_RESULT_ROWS)]
-            truncated = cur.fetchone() is not None
-            return {"rows": rows, "row_count": len(rows), "truncated": truncated}
-    except psycopg2.Error as e:
+            if isinstance(conn, sqlite3.Connection):
+                sql_q = _normalize_pg_to_sqlite(query)
+                cur = conn.cursor()
+                cur.execute(sql_q)
+                fetched = cur.fetchmany(MAX_RESULT_ROWS)
+                rows = [dict(r) for r in fetched]
+                truncated = cur.fetchone() is not None
+                return {"rows": rows, "row_count": len(rows), "truncated": truncated}
+            else:
+                conn.set_session(readonly=True, autocommit=True)
+                cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+                cur.execute("SET LOCAL statement_timeout = '10s'")
+                cur.execute(query)
+                rows = [dict(r) for r in cur.fetchmany(MAX_RESULT_ROWS)]
+                truncated = cur.fetchone() is not None
+                return {"rows": rows, "row_count": len(rows), "truncated": truncated}
+    except (psycopg2.Error, sqlite3.Error) as e:
         return {"error": str(e), "rows": [], "row_count": 0}

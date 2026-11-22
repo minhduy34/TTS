@@ -1,0 +1,122 @@
+[
+  {
+    "id": "E01",
+    "difficulty": "Easy",
+    "question": "Có tổng cộng bao nhiêu sinh viên trong cơ sở dữ liệu?",
+    "gold_sql": "SELECT COUNT(*) AS total_students FROM dim_student"
+  },
+  {
+    "id": "E02",
+    "difficulty": "Easy",
+    "question": "Liệt kê mã ngành và tên đầy đủ của tất cả các ngành học hiện có.",
+    "gold_sql": "SELECT major_code, major_name FROM dim_major"
+  },
+  {
+    "id": "E03",
+    "difficulty": "Easy",
+    "question": "Có bao nhiêu sinh viên hiện đang ở trạng thái bị đình chỉ học tập?",
+    "gold_sql": "SELECT COUNT(*) AS suspended_students FROM dim_student WHERE status = 'suspended'"
+  },
+  {
+    "id": "E04",
+    "difficulty": "Easy",
+    "question": "Điểm trung bình tích lũy thang 4 hiện tại của toàn bộ sinh viên trong trường là bao nhiêu (làm tròn 2 chữ số thập phân)?",
+    "gold_sql": "SELECT ROUND(AVG(current_gpa), 2) AS avg_gpa FROM dim_student"
+  },
+  {
+    "id": "E05",
+    "difficulty": "Easy",
+    "question": "Cho biết mã học bổng, tên học bổng và giá trị tiền thưởng của các loại học bổng thuộc nhóm học lực.",
+    "gold_sql": "SELECT scholarship_code, scholarship_name, amount FROM dim_scholarship WHERE scholarship_type = 'merit'"
+  },
+  {
+    "id": "M01",
+    "difficulty": "Medium",
+    "question": "Thống kê số lượng sinh viên của từng ngành học, hiển thị mã ngành và số lượng sinh viên sắp xếp giảm dần.",
+    "gold_sql": "SELECT m.major_code, COUNT(s.student_id) AS student_count FROM dim_major m LEFT JOIN dim_student s ON m.major_id = s.major_id GROUP BY m.major_code ORDER BY student_count DESC"
+  },
+  {
+    "id": "M02",
+    "difficulty": "Medium",
+    "question": "Mỗi khoa hoặc bộ môn hiện đang phụ trách giảng dạy bao nhiêu học phần? Hiển thị mã khoa/bộ môn và số lượng học phần.",
+    "gold_sql": "SELECT d.department_code, COUNT(c.course_id) AS course_count FROM dim_department d LEFT JOIN dim_course c ON d.department_id = c.department_id GROUP BY d.department_code"
+  },
+  {
+    "id": "M03",
+    "difficulty": "Medium",
+    "question": "Tính điểm GPA trung bình thang 4 của sinh viên theo từng ngành học (làm tròn 2 chữ số thập phân), hiển thị mã ngành và GPA trung bình.",
+    "gold_sql": "SELECT m.major_code, ROUND(AVG(s.current_gpa), 2) AS avg_gpa FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id GROUP BY m.major_code"
+  },
+  {
+    "id": "M04",
+    "difficulty": "Medium",
+    "question": "Có tổng cộng bao nhiêu lượt đăng ký học phần bị trượt môn trong lịch sử đăng ký?",
+    "gold_sql": "SELECT COUNT(*) AS failed_enrollments FROM fact_enrollment WHERE status = 'failed'"
+  },
+  {
+    "id": "M05",
+    "difficulty": "Medium",
+    "question": "Đối với các loại học bổng do doanh nghiệp tài trợ, đã có tổng cộng bao nhiêu suất được trao và tổng số tiền thực tế đã cấp là bao nhiêu?",
+    "gold_sql": "SELECT COUNT(fa.award_id) AS award_count, SUM(fa.amount_awarded) AS total_amount FROM dim_scholarship sc JOIN fact_scholarship_award fa ON sc.scholarship_id = fa.scholarship_id WHERE sc.scholarship_type = 'enterprise'"
+  },
+  {
+    "id": "H01",
+    "difficulty": "Hard",
+    "question": "Có bao nhiêu sinh viên khác nhau đã từng bị trượt học phần Giải tích 1?",
+    "gold_sql": "SELECT COUNT(DISTINCT fe.student_id) AS failed_students FROM fact_enrollment fe JOIN dim_course c ON fe.course_id = c.course_id WHERE c.course_name = 'Giải tích 1' AND fe.status = 'failed'"
+  },
+  {
+    "id": "H02",
+    "difficulty": "Hard",
+    "question": "Liệt kê 5 học phần có số lượt sinh viên trượt môn nhiều nhất, hiển thị mã học phần, tên học phần và số lượt trượt giảm dần.",
+    "gold_sql": "SELECT c.course_code, c.course_name, COUNT(fe.enrollment_id) AS fail_count FROM dim_course c JOIN fact_enrollment fe ON c.course_id = fe.course_id WHERE fe.status = 'failed' GROUP BY c.course_code, c.course_name ORDER BY fail_count DESC LIMIT 5"
+  },
+  {
+    "id": "H03",
+    "difficulty": "Hard",
+    "question": "Thống kê tổng số tiền học bổng thực tế đã cấp cho sinh viên của từng ngành học, hiển thị mã ngành và tổng tiền học bổng sắp xếp giảm dần.",
+    "gold_sql": "SELECT m.major_code, SUM(fa.amount_awarded) AS total_scholarship_amount FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id JOIN fact_scholarship_award fa ON s.student_id = fa.student_id GROUP BY m.major_code ORDER BY total_scholarship_amount DESC"
+  },
+  {
+    "id": "H04",
+    "difficulty": "Hard",
+    "question": "Trong học kỳ đang diễn ra hiện tại, có tổng cộng bao nhiêu lượt đăng ký học phần đang học?",
+    "gold_sql": "SELECT COUNT(fe.enrollment_id) AS current_enrollments FROM fact_enrollment fe JOIN dim_semester sem ON fe.semester_id = sem.semester_id WHERE sem.is_current = 1 AND fe.status = 'in_progress'"
+  },
+  {
+    "id": "H05",
+    "difficulty": "Hard",
+    "question": "Có bao nhiêu sinh viên khác nhau đã qua môn Cấu trúc dữ liệu và giải thuật?",
+    "gold_sql": "SELECT COUNT(DISTINCT fe.student_id) AS passed_students FROM fact_enrollment fe JOIN dim_course c ON fe.course_id = c.course_id WHERE c.course_code = 'CS102' AND fe.status = 'passed'"
+  },
+  {
+    "id": "X01",
+    "difficulty": "Extra Hard",
+    "question": "Đếm số lượng sinh viên đang theo học tại trường có điểm GPA tích lũy hiện tại cao hơn điểm GPA trung bình của toàn bộ sinh viên.",
+    "gold_sql": "SELECT COUNT(*) AS above_avg_active_students FROM dim_student WHERE status = 'active' AND current_gpa > (SELECT AVG(current_gpa) FROM dim_student)"
+  },
+  {
+    "id": "X02",
+    "difficulty": "Extra Hard",
+    "question": "Tìm các sinh viên đã được nhận từ 2 suất học bổng trở lên, hiển thị mã sinh viên, số suất học bổng và tổng số tiền học bổng nhận được, sắp xếp theo tổng tiền giảm dần.",
+    "gold_sql": "SELECT s.student_code, COUNT(fa.award_id) AS award_count, SUM(fa.amount_awarded) AS total_received FROM dim_student s JOIN fact_scholarship_award fa ON s.student_id = fa.student_id GROUP BY s.student_code HAVING COUNT(fa.award_id) >= 2 ORDER BY total_received DESC"
+  },
+  {
+    "id": "X03",
+    "difficulty": "Extra Hard",
+    "question": "Tính tỷ lệ phần trăm lượt học bị trượt môn trên tổng số lượt học đã kết thúc (đã qua môn hoặc bị trượt) của từng ngành học (làm tròn 2 chữ số thập phân), hiển thị mã ngành và tỷ lệ trượt.",
+    "gold_sql": "SELECT m.major_code, ROUND(100.0 * SUM(CASE WHEN fe.status = 'failed' THEN 1 ELSE 0 END) / COUNT(fe.enrollment_id), 2) AS fail_rate_pct FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id JOIN fact_enrollment fe ON s.student_id = fe.student_id WHERE fe.status IN ('passed', 'failed') GROUP BY m.major_code"
+  },
+  {
+    "id": "X04",
+    "difficulty": "Extra Hard",
+    "question": "Có bao nhiêu sinh viên đang theo học tại trường chưa từng nhận bất kỳ suất học bổng nào nhưng đã hoàn thành tích lũy từ 35 tín chỉ trở lên?",
+    "gold_sql": "SELECT COUNT(*) AS deserving_students FROM dim_student s WHERE s.status = 'active' AND s.total_credits_completed >= 35 AND s.student_id NOT IN (SELECT student_id FROM fact_scholarship_award)"
+  },
+  {
+    "id": "X05",
+    "difficulty": "Extra Hard",
+    "question": "Tính điểm trung bình thang 10 (làm tròn 2 chữ số thập phân) và tổng số lượt học đã qua môn của các học phần thuộc Bộ môn Toán.",
+    "gold_sql": "SELECT ROUND(AVG(fe.grade), 2) AS avg_grade, SUM(CASE WHEN fe.status = 'passed' THEN 1 ELSE 0 END) AS passed_count FROM dim_department d JOIN dim_course c ON d.department_id = c.department_id JOIN fact_enrollment fe ON c.course_id = fe.course_id WHERE d.department_code = 'TOAN' AND fe.status IN ('passed', 'failed')"
+  }
+]

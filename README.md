@@ -2,10 +2,10 @@
 
 Hệ thống trợ lý AI quản lý sinh viên, gồm hai service chạy song song:
 
-| Service | Thư mục | Port | Mô tả |
-|---------|---------|------|--------|
-| AI Service | `ai/` | 8001 | Multi-agent LangGraph + Gemini, kết nối DB |
-| Backend / Frontend | `fe_be/` | 8000 | FastAPI proxy + giao diện web |
+| Service            | Thư mục  | Port | Mô tả                                      |
+| ------------------ | ---------- | ---- | -------------------------------------------- |
+| AI Service         | `ai/`    | 8001 | Multi-agent LangGraph + Gemini, kết nối DB |
+| Backend / Frontend | `fe_be/` | 8000 | FastAPI proxy + giao diện web               |
 
 ---
 
@@ -31,22 +31,24 @@ git checkout dev
 ## 2. Cài đặt Database (Supabase)
 
 1. Tạo project mới trên Supabase, lấy **Connection String** dạng:
+
    ```
    postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres
    ```
-
 2. Vào **SQL Editor** trên Supabase, chạy toàn bộ nội dung file [fe_be/schema.sql](fe_be/schema.sql) để tạo bảng.
-
 3. Tạo file `fe_be/.env` từ mẫu:
+
    ```bash
    cp fe_be/.env.example fe_be/.env
    ```
+
    Điền `DATABASE_URL` vào `fe_be/.env`:
+
    ```env
    DATABASE_URL=postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres
    ```
-
 4. Seed dữ liệu mẫu:
+
    ```bash
    cd fe_be
    uv run python seed.py
@@ -58,16 +60,19 @@ git checkout dev
 ## 3. Cấu hình AI Service
 
 1. Tạo file `ai/.env` từ mẫu:
+
    ```bash
    cp ai/.env.example ai/.env
    ```
-
 2. Điền vào `ai/.env`:
+
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    DATABASE_URL=postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres
    ```
+
    > Dùng cùng `DATABASE_URL` với bước 2.
+   >
 
 ---
 
@@ -138,8 +143,8 @@ TTS/
 
 ## Biến môi trường
 
-| File | Biến | Mô tả |
-|------|------|--------|
-| `ai/.env` | `GEMINI_API_KEY` | API key Gemini (Google AI Studio) |
-| `ai/.env` | `DATABASE_URL` | PostgreSQL connection string (Supabase) |
-| `fe_be/.env` | `DATABASE_URL` | PostgreSQL connection string (Supabase) |
+| File           | Biến              | Mô tả                                 |
+| -------------- | ------------------ | --------------------------------------- |
+| `ai/.env`    | `GEMINI_API_KEY` | API key Gemini (Google AI Studio)       |
+| `ai/.env`    | `DATABASE_URL`   | PostgreSQL connection string (Supabase) |
+| `fe_be/.env` | `DATABASE_URL`   | PostgreSQL connection string (Supabase) |

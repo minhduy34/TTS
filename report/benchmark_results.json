@@ -1,0 +1,1179 @@
+{
+  "total_queries": 20,
+  "configs": {
+    "baseline_zeroshot": {
+      "label": "Baseline (Zero-shot Prompting)",
+      "overall": {
+        "count": 20,
+        "ex_count": 9,
+        "em_count": 8,
+        "csr_count": 18,
+        "ex_pct": 45.0,
+        "em_pct": 40.0,
+        "csr_pct": 90.0,
+        "avg_latency_s": 0.8
+      },
+      "by_difficulty": {
+        "Easy": {
+          "count": 5,
+          "ex_count": 3,
+          "em_count": 3,
+          "csr_count": 5,
+          "ex_pct": 60.0,
+          "em_pct": 60.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 0.49
+        },
+        "Medium": {
+          "count": 5,
+          "ex_count": 4,
+          "em_count": 3,
+          "csr_count": 4,
+          "ex_pct": 80.0,
+          "em_pct": 60.0,
+          "csr_pct": 80.0,
+          "avg_latency_s": 1.95
+        },
+        "Hard": {
+          "count": 5,
+          "ex_count": 1,
+          "em_count": 1,
+          "csr_count": 5,
+          "ex_pct": 20.0,
+          "em_pct": 20.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 0.43
+        },
+        "Extra Hard": {
+          "count": 5,
+          "ex_count": 1,
+          "em_count": 1,
+          "csr_count": 4,
+          "ex_pct": 20.0,
+          "em_pct": 20.0,
+          "csr_pct": 80.0,
+          "avg_latency_s": 0.33
+        }
+      }
+    },
+    "baseline_selector": {
+      "label": "Baseline + Schema Selector",
+      "overall": {
+        "count": 20,
+        "ex_count": 18,
+        "em_count": 17,
+        "csr_count": 19,
+        "ex_pct": 90.0,
+        "em_pct": 85.0,
+        "csr_pct": 95.0,
+        "avg_latency_s": 0.51
+      },
+      "by_difficulty": {
+        "Easy": {
+          "count": 5,
+          "ex_count": 5,
+          "em_count": 5,
+          "csr_count": 5,
+          "ex_pct": 100.0,
+          "em_pct": 100.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 0.21
+        },
+        "Medium": {
+          "count": 5,
+          "ex_count": 5,
+          "em_count": 5,
+          "csr_count": 5,
+          "ex_pct": 100.0,
+          "em_pct": 100.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 0.36
+        },
+        "Hard": {
+          "count": 5,
+          "ex_count": 4,
+          "em_count": 4,
+          "csr_count": 5,
+          "ex_pct": 80.0,
+          "em_pct": 80.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 0.37
+        },
+        "Extra Hard": {
+          "count": 5,
+          "ex_count": 4,
+          "em_count": 3,
+          "csr_count": 4,
+          "ex_pct": 80.0,
+          "em_pct": 60.0,
+          "csr_pct": 80.0,
+          "avg_latency_s": 1.1
+        }
+      }
+    },
+    "full_pipeline": {
+      "label": "Full Pipeline (Selector + Decomposer + Refiner)",
+      "overall": {
+        "count": 20,
+        "ex_count": 19,
+        "em_count": 17,
+        "csr_count": 20,
+        "ex_pct": 95.0,
+        "em_pct": 85.0,
+        "csr_pct": 100.0,
+        "avg_latency_s": 1.02
+      },
+      "by_difficulty": {
+        "Easy": {
+          "count": 5,
+          "ex_count": 5,
+          "em_count": 5,
+          "csr_count": 5,
+          "ex_pct": 100.0,
+          "em_pct": 100.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 1.17
+        },
+        "Medium": {
+          "count": 5,
+          "ex_count": 5,
+          "em_count": 5,
+          "csr_count": 5,
+          "ex_pct": 100.0,
+          "em_pct": 100.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 1.16
+        },
+        "Hard": {
+          "count": 5,
+          "ex_count": 5,
+          "em_count": 5,
+          "csr_count": 5,
+          "ex_pct": 100.0,
+          "em_pct": 100.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 1.08
+        },
+        "Extra Hard": {
+          "count": 5,
+          "ex_count": 4,
+          "em_count": 2,
+          "csr_count": 5,
+          "ex_pct": 80.0,
+          "em_pct": 40.0,
+          "csr_pct": 100.0,
+          "avg_latency_s": 0.68
+        }
+      }
+    }
+  },
+  "details": [
+    {
+      "item": {
+        "id": "E01",
+        "difficulty": "Easy",
+        "question": "Có tổng cộng bao nhiêu sinh viên trong cơ sở dữ liệu?",
+        "gold_sql": "SELECT COUNT(*) AS total_students FROM dim_student"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "total_students": 100
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(*) FROM dim_student",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.49,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(*) FROM dim_student",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.21,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(*) FROM dim_student",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.17,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "E02",
+        "difficulty": "Easy",
+        "question": "Liệt kê mã ngành và tên đầy đủ của tất cả các ngành học hiện có.",
+        "gold_sql": "SELECT major_code, major_name FROM dim_major"
+      },
+      "gold_row_count": 5,
+      "gold_preview": [
+        {
+          "major_code": "CNTT",
+          "major_name": "Công nghệ Thông tin"
+        },
+        {
+          "major_code": "KTPM",
+          "major_name": "Kỹ thuật Phần mềm"
+        },
+        {
+          "major_code": "HTTT",
+          "major_name": "Hệ thống Thông tin"
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT major_code, major_name FROM dim_major",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.49,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "baseline_selector": {
+          "sql": "SELECT major_code, major_name FROM dim_major",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.21,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "full_pipeline": {
+          "sql": "SELECT major_code, major_name FROM dim_major",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.17,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "E03",
+        "difficulty": "Easy",
+        "question": "Có bao nhiêu sinh viên hiện đang ở trạng thái bị đình chỉ học tập?",
+        "gold_sql": "SELECT COUNT(*) AS suspended_students FROM dim_student WHERE status = 'suspended'"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "suspended_students": 4
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'Đình chỉ'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.49,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'suspended'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.21,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'suspended'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.17,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "E04",
+        "difficulty": "Easy",
+        "question": "Điểm trung bình tích lũy thang 4 hiện tại của toàn bộ sinh viên trong trường là bao nhiêu (làm tròn 2 chữ số thập phân)?",
+        "gold_sql": "SELECT ROUND(AVG(current_gpa), 2) AS avg_gpa FROM dim_student"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "avg_gpa": 2.0
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT ROUND(AVG(current_gpa), 2) FROM dim_student",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.49,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT ROUND(AVG(current_gpa), 2) FROM dim_student",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.21,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT ROUND(AVG(current_gpa), 2) FROM dim_student",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.17,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "E05",
+        "difficulty": "Easy",
+        "question": "Cho biết mã học bổng, tên học bổng và giá trị tiền thưởng của các loại học bổng thuộc nhóm học lực.",
+        "gold_sql": "SELECT scholarship_code, scholarship_name, amount FROM dim_scholarship WHERE scholarship_type = 'merit'"
+      },
+      "gold_row_count": 2,
+      "gold_preview": [
+        {
+          "scholarship_code": "HB-KK1",
+          "scholarship_name": "Học bổng Khuyến khích Loại 1",
+          "amount": 4000000
+        },
+        {
+          "scholarship_code": "HB-KK2",
+          "scholarship_name": "Học bổng Khuyến khích Loại 2",
+          "amount": 2500000
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT scholarship_code, scholarship_name, amount FROM dim_scholarship WHERE scholarship_type = 'Học lực'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.49,
+          "attempts": 1,
+          "error": null,
+          "row_count": 0
+        },
+        "baseline_selector": {
+          "sql": "SELECT scholarship_code, scholarship_name, amount FROM dim_scholarship WHERE scholarship_type = 'merit'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.21,
+          "attempts": 1,
+          "error": null,
+          "row_count": 2
+        },
+        "full_pipeline": {
+          "sql": "SELECT scholarship_code, scholarship_name, amount FROM dim_scholarship WHERE scholarship_type = 'merit'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.17,
+          "attempts": 1,
+          "error": null,
+          "row_count": 2
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "M01",
+        "difficulty": "Medium",
+        "question": "Thống kê số lượng sinh viên của từng ngành học, hiển thị mã ngành và số lượng sinh viên sắp xếp giảm dần.",
+        "gold_sql": "SELECT m.major_code, COUNT(s.student_id) AS student_count FROM dim_major m LEFT JOIN dim_student s ON m.major_id = s.major_id GROUP BY m.major_code ORDER BY student_count DESC"
+      },
+      "gold_row_count": 5,
+      "gold_preview": [
+        {
+          "major_code": "HTTT",
+          "student_count": 26
+        },
+        {
+          "major_code": "KHMT",
+          "student_count": 21
+        },
+        {
+          "major_code": "CNTT",
+          "student_count": 20
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT t1.major_code, COUNT(t2.student_id) AS student_count FROM dim_major t1 LEFT JOIN dim_student t2 ON t1.major_id = t2.major_id GROUP BY t1.major_code ORDER BY student_count DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.95,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "baseline_selector": {
+          "sql": "SELECT t2.major_code, COUNT(t1.student_id) AS student_count FROM dim_student AS t1 JOIN dim_major AS t2 ON t1.major_id = t2.major_id GROUP BY t2.major_code ORDER BY student_count DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.36,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "full_pipeline": {
+          "sql": "SELECT m.major_code, COUNT(s.student_id) AS student_count FROM dim_student s JOIN dim_major m ON s.major_id = m.major_id GROUP BY m.major_code ORDER BY student_count DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.16,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "M02",
+        "difficulty": "Medium",
+        "question": "Mỗi khoa hoặc bộ môn hiện đang phụ trách giảng dạy bao nhiêu học phần? Hiển thị mã khoa/bộ môn và số lượng học phần.",
+        "gold_sql": "SELECT d.department_code, COUNT(c.course_id) AS course_count FROM dim_department d LEFT JOIN dim_course c ON d.department_id = c.department_id GROUP BY d.department_code"
+      },
+      "gold_row_count": 4,
+      "gold_preview": [
+        {
+          "department_code": "CNTT",
+          "course_count": 14
+        },
+        {
+          "department_code": "DAICUONG",
+          "course_count": 7
+        },
+        {
+          "department_code": "NGOAINGU",
+          "course_count": 3
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT t1.department_code, COUNT(t2.course_id) AS course_count FROM dim_department t1 LEFT JOIN dim_course t2 ON t1.department_id = t2.department_id GROUP BY t1.department_code",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.95,
+          "attempts": 1,
+          "error": null,
+          "row_count": 4
+        },
+        "baseline_selector": {
+          "sql": "SELECT t1.department_code, COUNT(t2.course_id) AS course_count FROM dim_department AS t1 LEFT JOIN dim_course AS t2 ON t1.department_id = t2.department_id GROUP BY t1.department_code",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.36,
+          "attempts": 1,
+          "error": null,
+          "row_count": 4
+        },
+        "full_pipeline": {
+          "sql": "SELECT d.department_code, COUNT(c.course_id) AS course_count FROM dim_course c JOIN dim_department d ON c.department_id = d.department_id GROUP BY d.department_code",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.16,
+          "attempts": 1,
+          "error": null,
+          "row_count": 4
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "M03",
+        "difficulty": "Medium",
+        "question": "Tính điểm GPA trung bình thang 4 của sinh viên theo từng ngành học (làm tròn 2 chữ số thập phân), hiển thị mã ngành và GPA trung bình.",
+        "gold_sql": "SELECT m.major_code, ROUND(AVG(s.current_gpa), 2) AS avg_gpa FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id GROUP BY m.major_code"
+      },
+      "gold_row_count": 5,
+      "gold_preview": [
+        {
+          "major_code": "CNTT",
+          "avg_gpa": 1.98
+        },
+        {
+          "major_code": "HTTT",
+          "avg_gpa": 2.01
+        },
+        {
+          "major_code": "KHMT",
+          "avg_gpa": 2.03
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT t1.major_code, ROUND(AVG(t2.current_gpa), 2) AS avg_gpa FROM dim_major t1 JOIN dim_student t2 ON t1.major_id = t2.major_id GROUP BY t1.major_code",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.95,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "baseline_selector": {
+          "sql": "SELECT t2.major_code, ROUND(AVG(t1.current_gpa), 2) AS avg_gpa FROM dim_student AS t1 JOIN dim_major AS t2 ON t1.major_id = t2.major_id GROUP BY t2.major_code",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.36,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "full_pipeline": {
+          "sql": "SELECT m.major_code, ROUND(AVG(s.current_gpa), 2) AS avg_gpa FROM dim_student s JOIN dim_major m ON s.major_id = m.major_id GROUP BY m.major_code",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.16,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "M04",
+        "difficulty": "Medium",
+        "question": "Có tổng cộng bao nhiêu lượt đăng ký học phần bị trượt môn trong lịch sử đăng ký?",
+        "gold_sql": "SELECT COUNT(*) AS failed_enrollments FROM fact_enrollment WHERE status = 'failed'"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "failed_enrollments": 936
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(*) AS failed_enrollment_count FROM fact_enrollment WHERE status = 'Failed' OR grade < 4.0 OR grade_letter = 'F'",
+          "csr": true,
+          "ex": true,
+          "em": false,
+          "latency": 1.95,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(*) AS failed_enrollments_count FROM fact_enrollment WHERE status = 'failed'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.36,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(*) AS failed_enrollments_count FROM fact_enrollment WHERE status = 'failed'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.16,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "M05",
+        "difficulty": "Medium",
+        "question": "Đối với các loại học bổng do doanh nghiệp tài trợ, đã có tổng cộng bao nhiêu suất được trao và tổng số tiền thực tế đã cấp là bao nhiêu?",
+        "gold_sql": "SELECT COUNT(fa.award_id) AS award_count, SUM(fa.amount_awarded) AS total_amount FROM dim_scholarship sc JOIN fact_scholarship_award fa ON sc.scholarship_id = fa.scholarship_id WHERE sc.scholarship_type = 'enterprise'"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "award_count": 4,
+          "total_amount": 24000000
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(t1.award_id) AS total_awards, SUM(t1.amount_awarded) AS total_amount FROM fact_scholarship_award t1 JOIN dim_scholarship t2 ON t1.scholarship_id = t2.scholarship_id WHERE t2.scholarship_type LIKE N'%doanh nghiệp%' OR t2.scholarship_type LIKE '%Enterprise%' OR t2.scholarship_type LIKE '%Corporate%'",
+          "csr": false,
+          "ex": false,
+          "em": false,
+          "latency": 1.95,
+          "attempts": 1,
+          "error": "near \"'%doanh nghiệp%'\": syntax error",
+          "row_count": 0
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(t1.award_id) AS total_awards, SUM(t1.amount_awarded) AS total_amount FROM fact_scholarship_award AS t1 JOIN dim_scholarship AS t2 ON t1.scholarship_id = t2.scholarship_id WHERE t2.scholarship_type = 'enterprise'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.36,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(f.award_id) AS total_awards, SUM(f.amount_awarded) AS total_amount FROM fact_scholarship_award f JOIN dim_scholarship s ON f.scholarship_id = s.scholarship_id WHERE s.scholarship_type = 'enterprise'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.16,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "H01",
+        "difficulty": "Hard",
+        "question": "Có bao nhiêu sinh viên khác nhau đã từng bị trượt học phần Giải tích 1?",
+        "gold_sql": "SELECT COUNT(DISTINCT fe.student_id) AS failed_students FROM fact_enrollment fe JOIN dim_course c ON fe.course_id = c.course_id WHERE c.course_name = 'Giải tích 1' AND fe.status = 'failed'"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "failed_students": 11
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(DISTINCT t1.student_id) FROM fact_enrollment AS t1 JOIN dim_course AS t2 ON t1.course_id = t2.course_id WHERE t2.course_name = 'Giải tích 1' AND t1.status = 'Failed'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.43,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(DISTINCT t1.student_id) FROM fact_enrollment AS t1 JOIN dim_course AS t2 ON t1.course_id = t2.course_id WHERE t2.course_name = 'Giải tích 1' AND t1.status = 'failed'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.37,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(DISTINCT t1.student_id) FROM fact_enrollment AS t1 JOIN dim_course AS t3 ON t1.course_id = t3.course_id WHERE t3.course_name = 'Giải tích 1' AND t1.status = 'failed'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.8,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "H02",
+        "difficulty": "Hard",
+        "question": "Liệt kê 5 học phần có số lượt sinh viên trượt môn nhiều nhất, hiển thị mã học phần, tên học phần và số lượt trượt giảm dần.",
+        "gold_sql": "SELECT c.course_code, c.course_name, COUNT(fe.enrollment_id) AS fail_count FROM dim_course c JOIN fact_enrollment fe ON c.course_id = fe.course_id WHERE fe.status = 'failed' GROUP BY c.course_code, c.course_name ORDER BY fail_count DESC LIMIT 5"
+      },
+      "gold_row_count": 5,
+      "gold_preview": [
+        {
+          "course_code": "GEN105",
+          "course_name": "Giáo dục thể chất 1",
+          "fail_count": 45
+        },
+        {
+          "course_code": "GEN103",
+          "course_name": "Tư tưởng Hồ Chí Minh",
+          "fail_count": 42
+        },
+        {
+          "course_code": "CS101",
+          "course_name": "Nhập môn Lập trình",
+          "fail_count": 41
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT t2.course_code, t2.course_name, COUNT(*) AS fail_count FROM fact_enrollment AS t1 JOIN dim_course AS t2 ON t1.course_id = t2.course_id WHERE t1.status = 'Failed' GROUP BY t2.course_id, t2.course_code, t2.course_name ORDER BY fail_count DESC LIMIT 5",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.43,
+          "attempts": 1,
+          "error": null,
+          "row_count": 0
+        },
+        "baseline_selector": {
+          "sql": "SELECT t2.course_code, t2.course_name, COUNT(*) AS failed_count FROM fact_enrollment AS t1 JOIN dim_course AS t2 ON t1.course_id = t2.course_id WHERE t1.status = 'failed' GROUP BY t2.course_id, t2.course_code, t2.course_name ORDER BY failed_count DESC LIMIT 5",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.37,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "full_pipeline": {
+          "sql": "SELECT t1.course_code, t1.course_name, COUNT(t2.student_id) FROM dim_course AS t1 JOIN fact_enrollment AS t2 ON t1.course_id = t2.course_id WHERE t2.status = 'failed' GROUP BY t1.course_id, t1.course_code, t1.course_name ORDER BY COUNT(t2.student_id) DESC LIMIT 5",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.8,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "H03",
+        "difficulty": "Hard",
+        "question": "Thống kê tổng số tiền học bổng thực tế đã cấp cho sinh viên của từng ngành học, hiển thị mã ngành và tổng tiền học bổng sắp xếp giảm dần.",
+        "gold_sql": "SELECT m.major_code, SUM(fa.amount_awarded) AS total_scholarship_amount FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id JOIN fact_scholarship_award fa ON s.student_id = fa.student_id GROUP BY m.major_code ORDER BY total_scholarship_amount DESC"
+      },
+      "gold_row_count": 5,
+      "gold_preview": [
+        {
+          "major_code": "HTTT",
+          "total_scholarship_amount": 35000000
+        },
+        {
+          "major_code": "CNTT",
+          "total_scholarship_amount": 34500000
+        },
+        {
+          "major_code": "KTPM",
+          "total_scholarship_amount": 26000000
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT t3.major_code, SUM(t1.amount_awarded) AS total_amount FROM fact_scholarship_award AS t1 JOIN dim_student AS t2 ON t1.student_id = t2.student_id JOIN dim_major AS t3 ON t2.major_id = t3.major_id GROUP BY t3.major_code ORDER BY total_amount DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.43,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "baseline_selector": {
+          "sql": "SELECT t3.major_code, SUM(t1.amount_awarded) AS total_amount FROM fact_scholarship_award AS t1 JOIN dim_student AS t2 ON t1.student_id = t2.student_id JOIN dim_major AS t3 ON t2.major_id = t3.major_id GROUP BY t3.major_id, t3.major_code ORDER BY total_amount DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.37,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "full_pipeline": {
+          "sql": "SELECT t1.major_code, SUM(t3.amount_awarded) FROM dim_major AS t1 JOIN dim_student AS t2 ON t1.major_id = t2.major_id JOIN fact_scholarship_award AS t3 ON t2.student_id = t3.student_id GROUP BY t1.major_id, t1.major_code ORDER BY SUM(t3.amount_awarded) DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.8,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "H04",
+        "difficulty": "Hard",
+        "question": "Trong học kỳ đang diễn ra hiện tại, có tổng cộng bao nhiêu lượt đăng ký học phần đang học?",
+        "gold_sql": "SELECT COUNT(fe.enrollment_id) AS current_enrollments FROM fact_enrollment fe JOIN dim_semester sem ON fe.semester_id = sem.semester_id WHERE sem.is_current = 1 AND fe.status = 'in_progress'"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "current_enrollments": 395
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(*) FROM fact_enrollment AS t1 JOIN dim_semester AS t2 ON t1.semester_id = t2.semester_id WHERE t2.is_current = 1 AND t1.status = 'Enrolled'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.43,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(*) FROM fact_enrollment AS t1 JOIN dim_semester AS t2 ON t1.semester_id = t2.semester_id WHERE t2.is_current = TRUE AND t1.status = 'in_progress'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.37,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(*) FROM fact_enrollment AS t1 JOIN dim_semester AS t2 ON t1.semester_id = t2.semester_id WHERE t2.is_current = 1 AND t1.status = 'in_progress'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.8,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "H05",
+        "difficulty": "Hard",
+        "question": "Có bao nhiêu sinh viên khác nhau đã qua môn Cấu trúc dữ liệu và giải thuật?",
+        "gold_sql": "SELECT COUNT(DISTINCT fe.student_id) AS passed_students FROM fact_enrollment fe JOIN dim_course c ON fe.course_id = c.course_id WHERE c.course_code = 'CS102' AND fe.status = 'passed'"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "passed_students": 24
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(DISTINCT t1.student_id) FROM fact_enrollment AS t1 JOIN dim_course AS t2 ON t1.course_id = t2.course_id WHERE t2.course_name = 'Cấu trúc dữ liệu và giải thuật' AND t1.status = 'Passed'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.43,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(DISTINCT t1.student_id) FROM fact_enrollment AS t1 JOIN dim_course AS t2 ON t1.course_id = t2.course_id WHERE t2.course_name = 'Cấu trúc dữ liệu và giải thuật' AND t1.status = 'passed'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.37,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(DISTINCT t1.student_id) \nFROM fact_enrollment AS t1 \nJOIN dim_course AS t2 ON t1.course_id = t2.course_id \nWHERE t2.course_code = 'CS102' AND t1.status = 'passed'",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 2.2,
+          "attempts": 2,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "X01",
+        "difficulty": "Extra Hard",
+        "question": "Đếm số lượng sinh viên đang theo học tại trường có điểm GPA tích lũy hiện tại cao hơn điểm GPA trung bình của toàn bộ sinh viên.",
+        "gold_sql": "SELECT COUNT(*) AS above_avg_active_students FROM dim_student WHERE status = 'active' AND current_gpa > (SELECT AVG(current_gpa) FROM dim_student)"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "above_avg_active_students": 41
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE current_gpa > (SELECT AVG(current_gpa) FROM dim_student) AND status = 'Đang học'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.33,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'active' AND current_gpa > (SELECT AVG(current_gpa) FROM dim_student)",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.1,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'active' AND current_gpa > (SELECT AVG(current_gpa) FROM dim_student WHERE status = 'active')",
+          "csr": true,
+          "ex": true,
+          "em": false,
+          "latency": 0.68,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "X02",
+        "difficulty": "Extra Hard",
+        "question": "Tìm các sinh viên đã được nhận từ 2 suất học bổng trở lên, hiển thị mã sinh viên, số suất học bổng và tổng số tiền học bổng nhận được, sắp xếp theo tổng tiền giảm dần.",
+        "gold_sql": "SELECT s.student_code, COUNT(fa.award_id) AS award_count, SUM(fa.amount_awarded) AS total_received FROM dim_student s JOIN fact_scholarship_award fa ON s.student_id = fa.student_id GROUP BY s.student_code HAVING COUNT(fa.award_id) >= 2 ORDER BY total_received DESC"
+      },
+      "gold_row_count": 6,
+      "gold_preview": [
+        {
+          "student_code": "SV2022010",
+          "award_count": 2,
+          "total_received": 10000000
+        },
+        {
+          "student_code": "SV2024019",
+          "award_count": 2,
+          "total_received": 8500000
+        },
+        {
+          "student_code": "SV2021020",
+          "award_count": 2,
+          "total_received": 7000000
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT s.student_code, COUNT(a.award_id) AS total_scholarships, SUM(a.amount_awarded) AS total_amount FROM dim_student s JOIN fact_scholarship_award a ON s.student_id = a.student_id GROUP BY s.student_id, s.student_code HAVING COUNT(a.award_id) >= 2 ORDER BY total_amount DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.33,
+          "attempts": 1,
+          "error": null,
+          "row_count": 6
+        },
+        "baseline_selector": {
+          "sql": "SELECT s.student_code, COUNT(a.award_id) AS total_awards, SUM(a.amount_awarded) AS total_amount FROM dim_student s JOIN fact_scholarship_award a ON s.student_id = a.student_id GROUP BY s.student_id, s.student_code HAVING COUNT(a.award_id) >= 2 ORDER BY total_amount DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.1,
+          "attempts": 1,
+          "error": null,
+          "row_count": 6
+        },
+        "full_pipeline": {
+          "sql": "SELECT t1.student_code, COUNT(t2.award_id) AS scholarship_count, SUM(t2.amount_awarded) AS total_amount FROM dim_student AS t1 JOIN fact_scholarship_award AS t2 ON t1.student_id = t2.student_id GROUP BY t1.student_id, t1.student_code HAVING COUNT(t2.award_id) >= 2 ORDER BY total_amount DESC",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.68,
+          "attempts": 1,
+          "error": null,
+          "row_count": 6
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "X03",
+        "difficulty": "Extra Hard",
+        "question": "Tính tỷ lệ phần trăm lượt học bị trượt môn trên tổng số lượt học đã kết thúc (đã qua môn hoặc bị trượt) của từng ngành học (làm tròn 2 chữ số thập phân), hiển thị mã ngành và tỷ lệ trượt.",
+        "gold_sql": "SELECT m.major_code, ROUND(100.0 * SUM(CASE WHEN fe.status = 'failed' THEN 1 ELSE 0 END) / COUNT(fe.enrollment_id), 2) AS fail_rate_pct FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id JOIN fact_enrollment fe ON s.student_id = fe.student_id WHERE fe.status IN ('passed', 'failed') GROUP BY m.major_code"
+      },
+      "gold_row_count": 5,
+      "gold_preview": [
+        {
+          "major_code": "CNTT",
+          "fail_rate_pct": 41.36
+        },
+        {
+          "major_code": "HTTT",
+          "fail_rate_pct": 38.49
+        },
+        {
+          "major_code": "KHMT",
+          "fail_rate_pct": 37.09
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT m.major_code, ROUND(SUM(CASE WHEN e.status = 'Trượt' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS failure_rate FROM dim_major m JOIN dim_student s ON m.major_id = s.major_id JOIN fact_enrollment e ON s.student_id = e.student_id WHERE e.status IN ('Đạt', 'Trượt') GROUP BY m.major_id, m.major_code",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.33,
+          "attempts": 1,
+          "error": null,
+          "row_count": 0
+        },
+        "baseline_selector": {
+          "sql": "SELECT m.major_code, ROUND(SUM(CASE WHEN e.status = 'failed' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS fail_percentage FROM dim_student s JOIN dim_major m ON s.major_id = m.major_id JOIN fact_enrollment e ON s.student_id = e.student_id WHERE e.status IN ('passed', 'failed') GROUP BY m.major_id, m.major_code",
+          "csr": true,
+          "ex": true,
+          "em": false,
+          "latency": 1.1,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        },
+        "full_pipeline": {
+          "sql": "SELECT m.major_code, ROUND(CAST(SUM(CASE WHEN fe.status = 'failed' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(fe.enrollment_id), 2) AS fail_percentage FROM dim_major AS m JOIN dim_student AS s ON m.major_id = s.major_id JOIN fact_enrollment AS fe ON s.student_id = fe.student_id WHERE fe.status IN ('passed', 'failed') GROUP BY m.major_id, m.major_code",
+          "csr": true,
+          "ex": true,
+          "em": false,
+          "latency": 0.68,
+          "attempts": 1,
+          "error": null,
+          "row_count": 5
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "X04",
+        "difficulty": "Extra Hard",
+        "question": "Có bao nhiêu sinh viên đang theo học tại trường chưa từng nhận bất kỳ suất học bổng nào nhưng đã hoàn thành tích lũy từ 35 tín chỉ trở lên?",
+        "gold_sql": "SELECT COUNT(*) AS deserving_students FROM dim_student s WHERE s.status = 'active' AND s.total_credits_completed >= 35 AND s.student_id NOT IN (SELECT student_id FROM fact_scholarship_award)"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "deserving_students": 26
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT COUNT(*) FROM dim_student s WHERE s.total_credits_completed >= 35 AND s.status = 'Đang học' AND s.student_id NOT IN (SELECT DISTINCT student_id FROM fact_scholarship_award)",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.33,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "baseline_selector": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'active' AND total_credits_completed >= 35 AND student_id NOT IN (SELECT student_id FROM fact_scholarship_award)",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 1.1,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        },
+        "full_pipeline": {
+          "sql": "SELECT COUNT(*) FROM dim_student WHERE status = 'active' AND total_credits_completed >= 35 AND student_id NOT IN (SELECT student_id FROM fact_scholarship_award)",
+          "csr": true,
+          "ex": true,
+          "em": true,
+          "latency": 0.68,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    },
+    {
+      "item": {
+        "id": "X05",
+        "difficulty": "Extra Hard",
+        "question": "Tính điểm trung bình thang 10 (làm tròn 2 chữ số thập phân) và tổng số lượt học đã qua môn của các học phần thuộc Bộ môn Toán.",
+        "gold_sql": "SELECT ROUND(AVG(fe.grade), 2) AS avg_grade, SUM(CASE WHEN fe.status = 'passed' THEN 1 ELSE 0 END) AS passed_count FROM dim_department d JOIN dim_course c ON d.department_id = c.department_id JOIN fact_enrollment fe ON c.course_id = fe.course_id WHERE d.department_code = 'TOAN' AND fe.status IN ('passed', 'failed')"
+      },
+      "gold_row_count": 1,
+      "gold_preview": [
+        {
+          "avg_grade": 5.06,
+          "passed_count": 236
+        }
+      ],
+      "runs": {
+        "baseline_zeroshot": {
+          "sql": "SELECT ROUND(AVG(e.grade), 2) AS avg_grade, COUNT(*) AS passed_enrollments FROM fact_enrollment e JOIN dim_course c ON e.course_id = c.course_id JOIN dim_department d ON c.department_id = d.department_id WHERE d.department_name LIKE N'%Toán%' AND e.status = 'Đạt'",
+          "csr": false,
+          "ex": false,
+          "em": false,
+          "latency": 0.33,
+          "attempts": 1,
+          "error": "near \"'%Toán%'\": syntax error",
+          "row_count": 0
+        },
+        "baseline_selector": {
+          "sql": "SELECT ROUND(AVG(e.grade), 2) AS avg_grade, COUNT(*) AS total_passed_courses FROM fact_enrollment e JOIN dim_course c ON e.course_id = c.course_id JOIN dim_department d ON c.department_id = d.department_id WHERE d.department_name LIKE N'%Toán%' AND e.status = 'passed'",
+          "csr": false,
+          "ex": false,
+          "em": false,
+          "latency": 1.1,
+          "attempts": 1,
+          "error": "near \"'%Toán%'\": syntax error",
+          "row_count": 0
+        },
+        "full_pipeline": {
+          "sql": "SELECT ROUND(AVG(fe.grade), 2) AS avg_grade, COUNT(fe.enrollment_id) AS passed_count FROM fact_enrollment AS fe JOIN dim_course AS c ON fe.course_id = c.course_id JOIN dim_department AS d ON c.department_id = d.department_id WHERE d.department_code = 'TOAN' AND fe.status = 'passed'",
+          "csr": true,
+          "ex": false,
+          "em": false,
+          "latency": 0.68,
+          "attempts": 1,
+          "error": null,
+          "row_count": 1
+        }
+      }
+    }
+  ]
+}

@@ -68,3 +68,4 @@ Cập nhật mảng chỉ số trang trong Mục lục để phản ánh đúng 
    - Xác nhận Section 2 có `w:pgNumType w:start="1"` và trường `PAGE`.
    - Xác nhận kích thước file `.docx` hợp lệ (> 80KB) và không bị lỗi XML corruption.
 3. Cập nhật `docs/plans/task.md`.
+

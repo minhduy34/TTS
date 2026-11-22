@@ -25,4 +25,3 @@ echo   Dia chi truy cap: http://localhost:8000
 echo   (Khi muon tat he thong, ban chi can chay Tat_Chatbox.bat)
 echo ========================================================
 timeout /t 5
-
