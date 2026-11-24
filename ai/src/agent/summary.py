@@ -27,12 +27,15 @@ async def generate_summary(session_id: str) -> str:
         for m in history[-6:]
     )
 
-    llm = get_llm()
-    response = await llm.ainvoke([
-        SystemMessage(content=_SUMMARY_PROMPT),
-        HumanMessage(content=conversation),
-    ])
-    content = response.content
-    if isinstance(content, list):
-        content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
-    return content.strip()[:1800]
+    try:
+        llm = get_llm()
+        response = await llm.ainvoke([
+            SystemMessage(content=_SUMMARY_PROMPT),
+            HumanMessage(content=conversation),
+        ])
+        content = response.content
+        if isinstance(content, list):
+            content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+        return content.strip()[:1800]
+    except Exception:
+        return ""

@@ -22,12 +22,15 @@ async def generate_content(reply: str, sql_query: str = "") -> str:
     if sql_query:
         prompt += f"\n\nSQL query used:\n{sql_query}"
 
-    llm = get_llm()
-    response = await llm.ainvoke([
-        SystemMessage(content=_CONTENT_PROMPT),
-        HumanMessage(content=prompt),
-    ])
-    content = response.content
-    if isinstance(content, list):
-        content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
-    return content.strip()
+    try:
+        llm = get_llm()
+        response = await llm.ainvoke([
+            SystemMessage(content=_CONTENT_PROMPT),
+            HumanMessage(content=prompt),
+        ])
+        content = response.content
+        if isinstance(content, list):
+            content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+        return content.strip()
+    except Exception:
+        return ""
