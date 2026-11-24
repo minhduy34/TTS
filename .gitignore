@@ -8,3 +8,9 @@ ai/src/utils/logs/
 docs/superpowers/
 .$pipeline.drawio.bkp
 report/
+*.md
+!README.md
+*.doc
+*.docx
+*.ppt
+*.pptx
