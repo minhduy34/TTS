@@ -1,3 +1,7 @@
+```
+
+```
+
 # TTS — Student AI Assistant
 
 Hệ thống trợ lý AI quản lý sinh viên, gồm hai service chạy song song:
@@ -21,7 +25,7 @@ Hệ thống trợ lý AI quản lý sinh viên, gồm hai service chạy song s
 ## 1. Clone repo
 
 ```bash
-git clone https://github.com/nhando12/TTS.git
+git clone https://github.com/minhduy34/TTS.git
 cd TTS
 git checkout dev
 ```
